@@ -45,4 +45,38 @@ public class MenuController {
         log.info("Get dishes successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
+
+    @PostMapping("/{menuId}/dish")
+    public ResponseEntity<ApiResponse<Void>> addDishToMenu(
+            @PathVariable String menuId,
+            @RequestBody Dish dish) {
+        
+        menuService.addDishToMenu(menuId, dish);
+        ApiResponse<Void> apiResponse = ApiResponse.success(null);
+        log.info("Add dish to menu successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @PatchMapping("/{menuId}/dish/{dishId}")
+    public ResponseEntity<ApiResponse<Void>> updateDishInMenu(
+            @PathVariable String menuId,
+            @PathVariable String dishId,
+            @RequestBody Dish dish) {
+        
+        menuService.updateDishInMenu(menuId, dishId, dish);
+        ApiResponse<Void> apiResponse = ApiResponse.success(null);
+        log.info("Update dish in menu successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @DeleteMapping("/{menuId}/dish/{dishId}")
+    public ResponseEntity<ApiResponse<Void>> deleteDishFromMenu(
+            @PathVariable String menuId,
+            @PathVariable String dishId) {
+        
+        menuService.deleteDishFromMenu(menuId,dishId);
+        ApiResponse<Void> apiResponse = ApiResponse.success(null);
+        log.info("Delete dish from menu successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
 }

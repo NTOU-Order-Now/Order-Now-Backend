@@ -8,6 +8,14 @@ on:
     paths-ignore:
       - "**/*.md"
       - "**/README.*"
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths-ignore:
+      - "**/*.md"
+      - "**/README.*"
+
 jobs:
   build:
     name: Build

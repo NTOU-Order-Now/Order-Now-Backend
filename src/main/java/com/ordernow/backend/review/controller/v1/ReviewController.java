@@ -7,7 +7,6 @@ import com.ordernow.backend.common.validation.RequestValidator;
 import com.ordernow.backend.review.model.dto.ReviewRequest;
 import com.ordernow.backend.review.model.entity.Review;
 import com.ordernow.backend.review.service.ReviewService;
-import jakarta.websocket.server.PathParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,6 +42,17 @@ public class ReviewController {
         List<Review> reviews = reviewService.getReviewByIds(ids);
         ApiResponse<List<Review>> apiResponse = ApiResponse.success(reviews);
         log.info("Get reviews successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @GetMapping("/{storeId}")
+    public ResponseEntity<ApiResponse<int[]>> getReviewNumbersByStoreId(
+            @PathVariable String storeId)
+            throws RequestValidationException {
+
+        int[] response = reviewService.getReviewNumberByStoreId(storeId);
+        ApiResponse<int[]> apiResponse = ApiResponse.success(response);
+        log.info("Get review numbers successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 

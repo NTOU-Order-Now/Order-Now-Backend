@@ -9,6 +9,7 @@ import com.ordernow.backend.store.repository.StoreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -26,6 +27,19 @@ public class ReviewService {
 
     public List<Review> getReviewByIds(List<String> ids) {
         return reviewRepository.findAllById(ids);
+    }
+
+    public int[] getReviewNumberByStoreId(String storeId)
+            throws NoSuchElementException {
+
+        Store store =  storeRepository.findById(storeId)
+                .orElseThrow(() -> new NoSuchElementException("Store not found"));
+        List<Review> reviews = getReviewByIds(store.getReviewIdList());
+        int[] reviewNumbers = new int[5];
+        for (Review review : reviews) {
+            reviewNumbers[5-review.getRating().intValue()]++;
+        }
+        return reviewNumbers;
     }
 
     public void addNewReviewToStore(String storeId, ReviewRequest reviewRequest, String userId, String userName)

@@ -33,7 +33,7 @@ public class StoreController {
             @RequestParam(defaultValue = "rating") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size)
+            @RequestParam(defaultValue = "5") int size)
             throws IllegalArgumentException {
 
         PageResponse<Store> stores = storeService.searchStores(keyword, sortBy, sortDir, page, size);

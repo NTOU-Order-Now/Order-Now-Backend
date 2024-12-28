@@ -61,7 +61,7 @@ public class ReviewController {
         PageResponse<Review> reviews = reviewService.queryStoreReviews(storeId, page, size);
         ApiResponse<PageResponse<Review>> apiResponse = ApiResponse.success(reviews);
         log.info("Get reviews successfully");
-        return null;
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
     @GetMapping("/{storeId}")

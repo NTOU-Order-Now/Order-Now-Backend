@@ -4,14 +4,13 @@ import com.ordernow.backend.common.dto.PageResponse;
 import com.ordernow.backend.review.model.dto.ReviewRequest;
 import com.ordernow.backend.review.model.entity.Review;
 import com.ordernow.backend.review.repository.ReviewRepository;
-import org.apache.coyote.BadRequestException;
+import com.ordernow.backend.store.service.StoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -19,10 +18,12 @@ import java.util.NoSuchElementException;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final StoreService storeService;
 
     @Autowired
-    public ReviewService(ReviewRepository reviewRepository) {
+    public ReviewService(ReviewRepository reviewRepository, StoreService storeService) {
         this.reviewRepository = reviewRepository;
+        this.storeService = storeService;
     }
 
     public List<Review> getReviewByIds(List<String> ids) {
@@ -43,13 +44,12 @@ public class ReviewService {
     public int[] getReviewNumberByStoreId(String storeId)
             throws NoSuchElementException {
 
-//        List<Review> reviews = getReviewByIds(store.getReviewIdList());
-//        int[] reviewNumbers = new int[5];
-//        for (Review review : reviews) {
-//            reviewNumbers[5-review.getRating().intValue()]++;
-//        }
-//        return reviewNumbers;
-        return null;
+        List<Review> reviews = reviewRepository.findAllByStoreId(storeId);
+        int[] reviewNumbers = new int[5];
+        for (Review review : reviews) {
+            reviewNumbers[5-review.getRating().intValue()]++;
+        }
+        return reviewNumbers;
     }
 
     public void addNewReviewToStore(String storeId, ReviewRequest reviewRequest, String userId, String userName)
@@ -63,6 +63,10 @@ public class ReviewService {
         }
 
         Review review = Review.createReview(reviewRequest, userId, userName, storeId);
+        storeService.updateStoreByReview(
+                storeId, reviewRequest.getRating(),
+                reviewRequest.getAverageSpend(),
+                reviewRepository.countByStoreId(storeId));
         reviewRepository.save(review);
     }
 }

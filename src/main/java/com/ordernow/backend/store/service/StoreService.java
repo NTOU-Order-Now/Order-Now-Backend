@@ -119,4 +119,11 @@ public class StoreService {
         Page<Store> storePage = storeRepository.findByNameContainingIgnoreCase(keyword, pageRequest);
         return PageResponse.of(storePage);
     }
+
+    public void updateStoreByReview(String storeId, double rating, double averageSpend, int size) {
+        Store store = validStoreId(storeId);
+        store.setRating((store.getRating()*size + rating) / (size+1));
+        store.setAverageSpend((store.getAverageSpend()*size + averageSpend) / (size+1));
+        storeRepository.save(store);
+    }
 }

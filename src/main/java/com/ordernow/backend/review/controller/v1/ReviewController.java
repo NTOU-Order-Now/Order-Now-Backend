@@ -55,7 +55,7 @@ public class ReviewController {
             @PathVariable String storeId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size)
-            throws NoSuchElementException {
+            throws NoSuchElementException, IllegalArgumentException {
 
         storeService.validStoreId(storeId);
         PageResponse<Review> reviews = reviewService.queryStoreReviews(storeId, page, size);

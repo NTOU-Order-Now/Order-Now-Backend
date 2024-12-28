@@ -67,7 +67,7 @@ public class OrderController {
             @RequestParam(value="size", defaultValue = "10") int size,
             @RequestParam(value="status", required = false) OrderedStatus status,
             @AuthenticationPrincipal CustomUserDetail customUserDetail)
-            throws NoSuchElementException, IllegalArgumentException {
+            throws IllegalArgumentException {
 
         if(status != null && !ALLOWED_ORDER_STATUS.contains(status.toString())) {
             throw new IllegalArgumentException("Invalid order status");

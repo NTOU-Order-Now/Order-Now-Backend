@@ -104,6 +104,9 @@ public class StoreService {
             int page, int size)
             throws IllegalArgumentException {
 
+        if(page < 0 || size <= 0) {
+            throw new IllegalArgumentException("Invalid page number or page size");
+        }
         if(!ALLOWED_SORT_BY_FIELDS.contains(sortBy)) {
             throw new IllegalArgumentException("Invalid sortBy value. Allowed values are 'averageSpend', 'rating' and 'name'.");
         }

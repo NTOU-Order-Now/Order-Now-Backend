@@ -99,9 +99,16 @@ public class OrderService {
         );
     }
 
-    public PageResponse<Order> getOrderListByStatus(CustomUserDetail userDetail, OrderedStatus status, int page, int size) {
-        Page<Order> orders = null;
+    public PageResponse<Order> getOrderListByStatus(
+            CustomUserDetail userDetail, OrderedStatus status,
+            int page, int size)
+            throws IllegalStateException {
 
+        if(page < 0 || size <= 0) {
+            throw new IllegalArgumentException("Invalid page number or page size");
+        }
+
+        Page<Order> orders = null;
         if(userDetail.getRole() == Role.CUSTOMER) {
             Sort sort = Sort.by(Sort.Direction.DESC, "orderTime");
             Pageable pageable = PageRequest.of(page, size, sort);

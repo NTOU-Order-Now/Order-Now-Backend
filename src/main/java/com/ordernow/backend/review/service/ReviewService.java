@@ -4,6 +4,7 @@ import com.ordernow.backend.common.dto.PageResponse;
 import com.ordernow.backend.review.model.dto.ReviewRequest;
 import com.ordernow.backend.review.model.entity.Review;
 import com.ordernow.backend.review.repository.ReviewRepository;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +29,12 @@ public class ReviewService {
         return reviewRepository.findAllById(ids);
     }
 
-    public PageResponse<Review> queryStoreReviews(String storeId, int page, int size) {
+    public PageResponse<Review> queryStoreReviews(String storeId, int page, int size)
+            throws IllegalArgumentException {
+
+        if(page < 0 || size <= 0) {
+            throw new IllegalArgumentException("Invalid page number or page size");
+        }
         Pageable pageable = PageRequest.of(page, size);
         Page<Review> reviews = reviewRepository.findAllByStoreId(storeId, pageable);
         return PageResponse.of(reviews);

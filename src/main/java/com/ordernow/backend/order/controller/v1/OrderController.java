@@ -73,12 +73,9 @@ public class OrderController {
             throw new IllegalArgumentException("Invalid order status");
         }
 
-        List<Order> orderList = orderService.getOrderListByStatus(
+        PageResponse<Order> orders = orderService.getOrderListByStatus(
                 customUserDetail, status, page, size);
-        int totalElements = orderService.countOrderListByStatus(customUserDetail, status);
-        PageResponse<Order> pageResponse = PageResponse.createPageResponse(totalElements, page, size, orderList);
-
-        ApiResponse<PageResponse<Order>> apiResponse = ApiResponse.success(pageResponse);
+        ApiResponse<PageResponse<Order>> apiResponse = ApiResponse.success(orders);
         log.info("User search order successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }

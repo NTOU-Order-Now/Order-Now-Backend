@@ -43,7 +43,7 @@ public class StoreService {
         return stores.stream().map(Store::getId).toList();
     }
 
-    public Store getStoreById(String storeId)
+    public Store validStoreId(String storeId)
             throws NoSuchElementException {
         return storeRepository.findById(storeId)
                 .orElseThrow(() -> new NoSuchElementException("Store not found"));
@@ -68,7 +68,7 @@ public class StoreService {
     public void updateStore(String storeId, StoreUpdateRequest request)
             throws NoSuchElementException {
 
-        Store currentStore = getStoreById(storeId);
+        Store currentStore = validStoreId(storeId);
         currentStore.setName(request.getName());
         currentStore.setPicture(request.getPicture());
         currentStore.setAddress(request.getAddress());
@@ -79,7 +79,8 @@ public class StoreService {
 
     public boolean changeBusinessStatus(String storeId)
             throws NoSuchElementException {
-        Store store = getStoreById(storeId);
+
+        Store store = validStoreId(storeId);
         store.setIsBusiness(!store.getIsBusiness());
         storeRepository.save(store);
         return store.getIsBusiness();

@@ -1,15 +1,16 @@
 package com.ordernow.backend.review.service;
 
-import com.ordernow.backend.auth.repository.UserRepository;
+import com.ordernow.backend.common.dto.PageResponse;
 import com.ordernow.backend.review.model.dto.ReviewRequest;
 import com.ordernow.backend.review.model.entity.Review;
 import com.ordernow.backend.review.repository.ReviewRepository;
-import com.ordernow.backend.store.model.entity.Store;
-import com.ordernow.backend.store.repository.StoreRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -17,38 +18,37 @@ import java.util.NoSuchElementException;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final StoreRepository storeRepository;
 
     @Autowired
-    public ReviewService(ReviewRepository reviewRepository, StoreRepository storeRepository) {
+    public ReviewService(ReviewRepository reviewRepository) {
         this.reviewRepository = reviewRepository;
-        this.storeRepository = storeRepository;
     }
 
     public List<Review> getReviewByIds(List<String> ids) {
         return reviewRepository.findAllById(ids);
     }
 
+    public PageResponse<Review> queryStoreReviews(String storeId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Review> reviews = reviewRepository.findAllByStoreId(storeId, pageable);
+        return PageResponse.of(reviews);
+    }
+
     public int[] getReviewNumberByStoreId(String storeId)
             throws NoSuchElementException {
 
-        Store store =  storeRepository.findById(storeId)
-                .orElseThrow(() -> new NoSuchElementException("Store not found"));
-        List<Review> reviews = getReviewByIds(store.getReviewIdList());
-        int[] reviewNumbers = new int[5];
-        for (Review review : reviews) {
-            reviewNumbers[5-review.getRating().intValue()]++;
-        }
-        return reviewNumbers;
+//        List<Review> reviews = getReviewByIds(store.getReviewIdList());
+//        int[] reviewNumbers = new int[5];
+//        for (Review review : reviews) {
+//            reviewNumbers[5-review.getRating().intValue()]++;
+//        }
+//        return reviewNumbers;
+        return null;
     }
 
     public void addNewReviewToStore(String storeId, ReviewRequest reviewRequest, String userId, String userName)
             throws NoSuchElementException {
 
-        Store store = storeRepository.findById(storeId).orElse(null);
-        if(store == null) {
-            throw new NoSuchElementException("Store not found");
-        }
         if(reviewRequest.getRating() <= 0 || reviewRequest.getRating() > 5) {
             throw new NoSuchElementException("Invalid rating");
         }
@@ -56,10 +56,7 @@ public class ReviewService {
             throw new NoSuchElementException("Invalid average spend");
         }
 
-        Review review = Review.createReview(reviewRequest, userId, userName);
+        Review review = Review.createReview(reviewRequest, userId, userName, storeId);
         reviewRepository.save(review);
-
-        store.addReview(review.getId(), review.getRating(), review.getAverageSpend());
-        storeRepository.save(store);
     }
 }

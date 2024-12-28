@@ -66,7 +66,7 @@ public class StoreController {
     @GetMapping("/{storeId}/menu")
     public ResponseEntity<Menu> getMenuByStoreId(@PathVariable String storeId) {
 
-        Store store = storeService.getStoreById(storeId);
+        Store store = storeService.validStoreId(storeId);
         if(store == null) {
             log.error("Store not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -87,7 +87,7 @@ public class StoreController {
             @PathVariable String storeId,
             @RequestParam(value = "category") String category
             ) {
-        Store store = storeService.getStoreById(storeId);
+        Store store = storeService.validStoreId(storeId);
         if(store == null) {
             log.error("Store not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

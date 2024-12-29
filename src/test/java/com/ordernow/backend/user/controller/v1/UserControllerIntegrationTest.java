@@ -49,6 +49,7 @@ public class UserControllerIntegrationTest {
     String testMerchantPhone = "0912345678";
     String customerToken;
     String merchantToken;
+
     @BeforeEach
     void setUp() throws Exception {
         userRepository.deleteAll();
@@ -216,9 +217,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     void testUpdateProfileWithInvalidRequest() throws Exception {
-
         UserProfileRequest profileRequest = new UserProfileRequest();
-
         profileRequest.setName("");
         profileRequest.setPhoneNumber("0912345678");
 

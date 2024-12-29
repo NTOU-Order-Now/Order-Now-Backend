@@ -72,19 +72,19 @@ public class JWTFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
-            log.error("token has expired");
-            ApiResponse.handleError(response, 401, "token has expired");
+            log.error("Token has expired");
+            ApiResponse.handleError(response, 401, "Token has expired");
         } catch (JwtException e) {
-            log.error("token is invalid");
-            ApiResponse.handleError(response, 401, "token is invalid");
+            log.error("Token is invalid");
+            ApiResponse.handleError(response, 401, "Token is invalid");
         } catch (UsernameNotFoundException e) {
-            log.error("username not found");
-            ApiResponse.handleError(response, 401, "username not found");
+            log.error("User not found");
+            ApiResponse.handleError(response, 401, "User not found");
         } catch (AuthenticationException e) {
-            log.error("authentication failed");
-            ApiResponse.handleError(response, 401, "authentication failed");
+            log.error("Authentication failed");
+            ApiResponse.handleError(response, 401, "Authentication failed");
         } catch (Exception e) {
-            log.error("unhandled exception");
+            log.error("Unhandled exception");
             ApiResponse.handleError(response, 500, "Internal Server Error");
         }
     }

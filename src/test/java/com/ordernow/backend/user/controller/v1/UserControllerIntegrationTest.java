@@ -251,6 +251,6 @@ public class UserControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(profileRequest)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401))
-                .andExpect(jsonPath("$.message").value("username not found"));
+                .andExpect(jsonPath("$.message").value("User not found"));
     }
 }

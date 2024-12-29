@@ -23,7 +23,6 @@ public class Store {
     private String phoneNumber;
     private String address;
     private Double rating;
-    private List<String> reviewIdList;
     private String menuId;
     private Double averageSpend;
     private String description;
@@ -31,7 +30,6 @@ public class Store {
     private Pair<LocalTime, LocalTime>[][] businessHours;
 
     public Store() {
-        reviewIdList = new ArrayList<>();
         businessHours = new Pair[7][2];
         initializeDefaultBusinessHours();
     }
@@ -55,11 +53,5 @@ public class Store {
                 .description("")
                 .isBusiness(false)
                 .build();
-    }
-
-    public void addReview(String reviewId, double rating, double averageSpend) {
-        this.rating = (reviewIdList.size()*this.rating + rating) / (reviewIdList.size()+1);
-        this.averageSpend = (reviewIdList.size()*this.averageSpend + averageSpend) / (reviewIdList.size()+1);
-        reviewIdList.add(reviewId);
     }
 }

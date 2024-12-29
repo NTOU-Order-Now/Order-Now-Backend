@@ -21,15 +21,17 @@ public class Review {
     private String id;
     private Double averageSpend;
     private String comment;
+    private String storeId;
     private String userId;
     private String userName;
     private Double rating;
     private LocalDateTime date;
 
-    public static Review createReview(ReviewRequest reviewRequest, String userId, String userName) {
+    public static Review createReview(ReviewRequest reviewRequest, String userId, String userName, String storeId) {
         return Review.builder()
                 .averageSpend(reviewRequest.getAverageSpend())
                 .comment(reviewRequest.getComment())
+                .storeId(storeId)
                 .userId(userId)
                 .userName(userName)
                 .rating(reviewRequest.getRating())

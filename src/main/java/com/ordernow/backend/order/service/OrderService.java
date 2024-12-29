@@ -1,6 +1,7 @@
 package com.ordernow.backend.order.service;
 
 import com.ordernow.backend.auth.model.entity.CustomUserDetail;
+import com.ordernow.backend.common.dto.PageResponse;
 import com.ordernow.backend.menu.service.MenuService;
 import com.ordernow.backend.notification.model.dto.Notification;
 import com.ordernow.backend.order.model.entity.Order;
@@ -12,6 +13,7 @@ import com.ordernow.backend.user.model.entity.Role;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -97,43 +99,38 @@ public class OrderService {
         );
     }
 
-    public List<Order> getOrderListByStatus(CustomUserDetail userDetail, OrderedStatus status, int page, int size) {
+    public PageResponse<Order> getOrderListByStatus(
+            CustomUserDetail userDetail, OrderedStatus status,
+            int page, int size)
+            throws IllegalStateException {
 
+        if(page < 0 || size <= 0) {
+            throw new IllegalArgumentException("Invalid page number or page size");
+        }
+
+        Page<Order> orders = null;
         if(userDetail.getRole() == Role.CUSTOMER) {
             Sort sort = Sort.by(Sort.Direction.DESC, "orderTime");
             Pageable pageable = PageRequest.of(page, size, sort);
             if(status == null)
-                return orderRepository.findAllByCustomerIdAndStatusNot(userDetail.getId(), OrderedStatus.IN_CART, pageable);
+                orders = orderRepository.findAllByCustomerIdAndStatusNot(userDetail.getId(), OrderedStatus.IN_CART, pageable);
             else
-                return orderRepository.findAllByCustomerIdAndStatus(userDetail.getId(), status, pageable);
+                orders = orderRepository.findAllByCustomerIdAndStatus(userDetail.getId(), status, pageable);
         }
-        if(userDetail.getRole() == Role.MERCHANT) {
+        else if(userDetail.getRole() == Role.MERCHANT) {
             Sort sort = Sort.by(Sort.Direction.ASC, "orderTime");
             Pageable pageable = PageRequest.of(page, size, sort);
             Merchant merchant = (Merchant) userDetail.getUser();
             if(status == null)
-                return orderRepository.findAllByStoreIdAndStatusNot(merchant.getStoreId(), OrderedStatus.IN_CART, pageable);
+                orders = orderRepository.findAllByStoreIdAndStatusNot(merchant.getStoreId(), OrderedStatus.IN_CART, pageable);
             else
-                return orderRepository.findAllByStoreIdAndStatus(merchant.getStoreId(), status, pageable);
+                orders = orderRepository.findAllByStoreIdAndStatus(merchant.getStoreId(), status, pageable);
         }
-        return null;
-    }
+        else {
+            return null;
+        }
 
-    public int countOrderListByStatus(CustomUserDetail userDetail, OrderedStatus status) {
-        if(userDetail.getRole() == Role.CUSTOMER) {
-            if(status == null)
-                return orderRepository.countByCustomerIdAndStatusNot(userDetail.getId(), OrderedStatus.IN_CART);
-            else
-                return orderRepository.countByCustomerIdAndStatus(userDetail.getId(), status);
-        }
-        if(userDetail.getRole() == Role.MERCHANT) {
-            Merchant merchant = (Merchant) userDetail.getUser();
-            if(status == null)
-                return orderRepository.countByStoreIdAndStatusNot(merchant.getStoreId(), OrderedStatus.IN_CART);
-            else
-                return orderRepository.countByStoreIdAndStatus(merchant.getStoreId(), status);
-        }
-        return 0;
+        return PageResponse.of(orders);
     }
 
     public void updatePickupTime(String orderId, int pickupTime)

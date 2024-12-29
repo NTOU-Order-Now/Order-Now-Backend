@@ -3,7 +3,6 @@ package com.ordernow.backend.security.config;
 import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.security.jwt.JWTFilter;
 import com.ordernow.backend.security.provider.CustomAuthenticationProvider;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

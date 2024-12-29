@@ -1,7 +1,10 @@
 package com.ordernow.backend.security.config;
 
+import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.security.jwt.JWTFilter;
 import com.ordernow.backend.security.provider.CustomAuthenticationProvider;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,15 +31,13 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class SecurityConfig {
     @Value("${cors.allowedOrigins}")
     private String allowedOrigins;
 
     private final CustomAuthenticationProvider authenticationProvider;
     private final JWTFilter jwtFilter;
-
-    @Value("${ALLOWED_ORIGIN}")
-    private String allowedOrigin;
 
     @Autowired
     public SecurityConfig(JWTFilter jwtFilter, CustomAuthenticationProvider authenticationProvider) {
@@ -67,6 +68,18 @@ public class SecurityConfig {
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors->cors.configurationSource(corsConfigurationSource()))
+
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            ApiResponse.handleError(response, 401, authException.getMessage());
+                            log.error(authException.getMessage());
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            ApiResponse.handleError(response, 403, accessDeniedException.getMessage());
+                            log.error(accessDeniedException.getMessage());
+                        })
+                )
+
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/*/admin/**").permitAll()
                         .requestMatchers("/api/*/stores/**").permitAll()

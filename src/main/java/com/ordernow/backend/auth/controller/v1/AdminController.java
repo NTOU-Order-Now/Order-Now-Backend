@@ -1,5 +1,6 @@
 package com.ordernow.backend.auth.controller.v1;
 
+import com.ordernow.backend.order.model.entity.OrderedStatus;
 import com.ordernow.backend.order.repository.OrderRepository;
 import com.ordernow.backend.user.service.UserService;
 import com.ordernow.backend.common.dto.ApiResponse;
@@ -46,6 +47,14 @@ public class AdminController {
             @PathVariable String orderId) {
 
         orderRepository.deleteById(orderId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/order")
+    public ResponseEntity<ApiResponse<Void>> deleteOrder(
+            @RequestParam OrderedStatus status) {
+
+        orderRepository.deleteByStatus(status);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
     }
 }

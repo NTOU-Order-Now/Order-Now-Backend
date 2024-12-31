@@ -98,11 +98,12 @@ public class SecurityConfig {
                         .failureHandler((request, response, exception) -> {
                             ApiResponse.handleError(response, 401, "OAuth2 authentication failed");
                             log.error(exception.getMessage());
+                            log.error("OAuth2 authentication failed", exception);
                         })
                 )
 
                 .httpBasic(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())
                 .build();

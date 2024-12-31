@@ -2,12 +2,10 @@ package com.ordernow.backend.auth.service;
 
 import com.ordernow.backend.auth.model.dto.LoginRequest;
 import com.ordernow.backend.store.service.StoreService;
-import com.ordernow.backend.user.model.entity.Customer;
-import com.ordernow.backend.user.model.entity.Merchant;
-import com.ordernow.backend.user.model.entity.Role;
-import com.ordernow.backend.user.model.entity.User;
+import com.ordernow.backend.user.model.entity.*;
 import com.ordernow.backend.user.repository.UserRepository;
 import com.ordernow.backend.security.jwt.JWTService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -17,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -55,6 +54,10 @@ public class AuthService {
         user.setId(null);
         user.setPassword(encoder.encode(user.getPassword()));
 
+        if(user.getLoginType() == LoginType.GOOGLE) {
+            user.setPassword("");
+        }
+
         if(user.getRole() == Role.MERCHANT && user.getPhoneNumber().isEmpty()){
             throw new IllegalArgumentException("Merchant phone number can not be empty");
         }
@@ -70,6 +73,12 @@ public class AuthService {
     public String verify(LoginRequest loginRequest)
             throws AuthenticationServiceException {
 
+        User user = userRepository.findByEmail(loginRequest.getEmail());
+        if(user != null && user.getLoginType() == LoginType.GOOGLE) {
+            log.error("Please use Google login");
+            throw new AuthenticationServiceException("Please use Google login");
+        }
+
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
@@ -78,6 +87,7 @@ public class AuthService {
         );
 
         if(!authentication.isAuthenticated()) {
+            log.error("Authentication failed");
             throw new AuthenticationServiceException("Authentication failed");
         }
         return jwtService.generateToken(loginRequest.getEmail());

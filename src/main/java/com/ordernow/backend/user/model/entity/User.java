@@ -18,7 +18,7 @@ public class User {
     private String avatarUrl = "";
     private Gender gender = Gender.OTHER;
     private Role role;
-    private LoginType loginType = LoginType.LOCAL;
+    private LoginType loginType;
 
     public User(String name, String email, String password, Role role) {
         this.name = name;

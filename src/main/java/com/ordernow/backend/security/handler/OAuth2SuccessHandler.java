@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -53,12 +52,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Map<String, Object> result = new HashMap<>();
         User user = userService.getUserByEmail(email);
         if(user == null) { // register
-            String temporaryToken = jwtService.generateTemporaryToken(email);
             result.put("isNewUser", true);
             result.put("email", email);
             result.put("name", name);
             result.put("avatarUrl", avatarUrl);
-            result.put("temporaryToken", temporaryToken);
             ApiResponse.handleSuccess(response, result);
         } else if(user.getLoginType() == LoginType.GOOGLE){ // login
             String token = jwtService.generateToken(email);

@@ -29,6 +29,15 @@ public class ApiResponse<T> {
         return new ApiResponse<T>(status, message, null);
     }
 
+    public static <T> void handleSuccess(HttpServletResponse response, T data)
+            throws IOException {
+        response.setStatus(200);
+        response.setContentType("application/json");
+        response.getWriter().write(
+                objectMapper.writeValueAsString(success(data))
+        );
+    }
+
     public static void handleError(HttpServletResponse response, int status, String message)
             throws IOException {
         response.setStatus(status);

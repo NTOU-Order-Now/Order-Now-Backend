@@ -1,13 +1,12 @@
 package com.ordernow.backend.security.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.security.jwt.JWTService;
 import com.ordernow.backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -62,9 +61,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             result.put("token", token);
         }
 
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setStatus(HttpServletResponse.SC_OK);
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getWriter(), result);
+        ApiResponse.handleSuccess(response, result);
     }
 }

@@ -2,6 +2,7 @@ package com.ordernow.backend.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ordernow.backend.security.jwt.JWTService;
+import com.ordernow.backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +22,12 @@ import java.util.Map;
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JWTService jwtService;
+    private final UserService userService;
 
     @Autowired
-    public OAuth2SuccessHandler(JWTService jwtService) {
+    public OAuth2SuccessHandler(JWTService jwtService, UserService userService) {
         this.jwtService = jwtService;
+        this.userService = userService;
     }
 
     @Override
@@ -44,12 +47,20 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String name = oAuth2User.getAttribute("name");
         String avatarUrl = oAuth2User.getAttribute("picture");
 
-        String token = jwtService.generateToken(email);
-
         Map<String, Object> result = new HashMap<>();
-        result.put("name", name);
-        result.put("email", email);
-        result.put("token", token);
+        if(userService.getUserByEmail(email) == null) { // register
+            String temporaryToken = jwtService.generateTemporaryToken(email);
+            result.put("isNewUser", true);
+            result.put("email", email);
+            result.put("name", name);
+            result.put("picture", avatarUrl);
+            result.put("temporaryToken", temporaryToken);
+        } else { // login
+            String token = jwtService.generateToken(email);
+            result.put("name", name);
+            result.put("email", email);
+            result.put("token", token);
+        }
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_OK);

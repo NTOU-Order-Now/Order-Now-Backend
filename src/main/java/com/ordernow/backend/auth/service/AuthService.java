@@ -6,7 +6,7 @@ import com.ordernow.backend.user.model.entity.Customer;
 import com.ordernow.backend.user.model.entity.Merchant;
 import com.ordernow.backend.user.model.entity.Role;
 import com.ordernow.backend.user.model.entity.User;
-import com.ordernow.backend.auth.repository.UserRepository;
+import com.ordernow.backend.user.repository.UserRepository;
 import com.ordernow.backend.security.jwt.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;

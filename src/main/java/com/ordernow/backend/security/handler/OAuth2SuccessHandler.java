@@ -42,6 +42,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
+        String avatarUrl = oAuth2User.getAttribute("picture");
 
         String token = jwtService.generateToken(email);
 

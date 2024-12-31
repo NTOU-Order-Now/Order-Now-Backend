@@ -92,8 +92,9 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
+        System.out.println("shouldNotFilter: " + path);
         // 排除 WebSocket 相關的路徑
-        return path.startsWith("/websocket") || path.startsWith("/websocket/**");
+        return path.startsWith("*/websocket/**");
     }
 
 

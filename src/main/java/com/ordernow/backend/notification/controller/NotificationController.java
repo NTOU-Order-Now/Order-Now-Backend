@@ -24,6 +24,7 @@ public class NotificationController {
     @MessageMapping("/order-tracker/{orderId}")
     @SendTo("/topic/order/{orderId}")
     public Notification trackOrder(@DestinationVariable String orderId) {
+        log.info("Sending notification for orderId: {}", orderId);
 
         Order order = orderService.getOrderAndValid(orderId);
         Notification notification = new Notification(
@@ -31,7 +32,6 @@ public class NotificationController {
                 order.getStatus(),
                 java.time.Instant.now().toString()
         );
-        log.info("Sending notification for orderId: {}", orderId);
         log.info(notification.toString());
         return notification;
     }

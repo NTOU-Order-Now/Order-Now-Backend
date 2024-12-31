@@ -26,6 +26,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -80,6 +81,7 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(request -> request
+                        .requestMatchers("/websocket/**").permitAll()
                         .requestMatchers("/api/*/admin/**").permitAll()
                         .requestMatchers("/api/*/stores/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/*/menu/**", "/api/*/reviews/**").permitAll()

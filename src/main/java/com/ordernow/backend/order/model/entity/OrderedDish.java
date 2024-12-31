@@ -42,4 +42,9 @@ public class OrderedDish {
                 && Objects.equals(note, orderedDishRequest.getNote())
                 && Objects.equals(chosenAttributes, orderedDishRequest.getChosenAttributes());
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

@@ -18,6 +18,10 @@ import java.util.List;
 public class Merchant extends User{
     private String storeId;
 
+    public Merchant() {// Springboot need it
+        super();
+    }
+
     public Merchant(User user, String storeId) {
         super(user);
         this.storeId = storeId;

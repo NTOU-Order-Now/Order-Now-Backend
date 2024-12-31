@@ -5,6 +5,7 @@ import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.common.exception.RequestValidationException;
 import com.ordernow.backend.common.validation.RequestValidator;
 import com.ordernow.backend.user.model.dto.UserProfileRequest;
+import com.ordernow.backend.user.model.dto.UserResponse;
 import com.ordernow.backend.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,16 @@ public class UserController {
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping()
+    public ResponseEntity<ApiResponse<UserResponse>> getUserInfo(
+            @AuthenticationPrincipal CustomUserDetail customUserDetail) {
+
+        UserResponse user = userService.getUserResponseById(customUserDetail.getId());
+        ApiResponse<UserResponse> response = ApiResponse.success(user);
+        log.info("Get user info successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping()

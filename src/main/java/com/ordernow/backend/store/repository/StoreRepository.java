@@ -1,6 +1,8 @@
 package com.ordernow.backend.store.repository;
 
 import com.ordernow.backend.store.model.entity.Store;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -21,4 +23,6 @@ public interface StoreRepository extends MongoRepository<Store, String> {
     List<Store> findByNameContainingOnlyIdOrderByAverageSpendAsc(String keyword);
     @Query(value = "{ 'name': { $regex: ?0, $options: 'i' } }", fields = "{ 'id' : 1 }", sort = "{ 'averageSpend': -1 }")
     List<Store> findByNameContainingOnlyIdOrderByAverageSpendDesc(String keyword);
+
+    Page<Store> findByNameContainingIgnoreCase(String keyword, PageRequest pageRequest);
 }

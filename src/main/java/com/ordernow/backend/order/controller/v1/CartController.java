@@ -4,12 +4,12 @@ import com.ordernow.backend.auth.model.entity.CustomUserDetail;
 import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.common.exception.RequestValidationException;
 import com.ordernow.backend.common.validation.RequestValidator;
+import com.ordernow.backend.order.model.dto.NoteRequest;
 import com.ordernow.backend.order.model.dto.OrderedDishPatchRequest;
 import com.ordernow.backend.order.model.dto.OrderedDishRequest;
 import com.ordernow.backend.order.model.entity.Order;
 import com.ordernow.backend.order.service.CartService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -82,10 +82,12 @@ public class CartController {
 
     @PatchMapping("/send")
     public ResponseEntity<ApiResponse<Order>> sendOrder(
+            @RequestBody NoteRequest noteRequest,
             @AuthenticationPrincipal CustomUserDetail customUserDetail)
             throws NoSuchElementException {
 
-        Order cartOrder = cartService.sendOrder(customUserDetail.getId());
+        RequestValidator.validateRequest(noteRequest);
+        Order cartOrder = cartService.sendOrder(customUserDetail.getId(), noteRequest.getNote());
         ApiResponse<Order> apiResponse = ApiResponse.success(cartOrder);
         log.info("Customer send order successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);

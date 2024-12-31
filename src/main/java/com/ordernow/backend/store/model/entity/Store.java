@@ -23,7 +23,6 @@ public class Store {
     private String phoneNumber;
     private String address;
     private Double rating;
-    private List<String> reviewIdList;
     private String menuId;
     private Double averageSpend;
     private String description;
@@ -31,7 +30,6 @@ public class Store {
     private Pair<LocalTime, LocalTime>[][] businessHours;
 
     public Store() {
-        reviewIdList = new ArrayList<>();
         businessHours = new Pair[7][2];
         initializeDefaultBusinessHours();
     }

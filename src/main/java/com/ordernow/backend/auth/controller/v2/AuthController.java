@@ -40,6 +40,7 @@ public class AuthController {
         RequestValidator.validateRequest(user);
         authService.createUser(user);
         ApiResponse<Void> apiResponse = ApiResponse.success(null);
+        log.info("Sign up user successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
@@ -51,15 +52,10 @@ public class AuthController {
         RequestValidator.validateRequest(loginRequest);
         String token = authService.verify(loginRequest);
         User user = userService.getUserByEmail(loginRequest.getEmail());
-        LoginResponse response = new LoginResponse(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                user.getAvatarUrl(),
-                user.getRole(),
-                token
-        );
+
+        LoginResponse response = LoginResponse.createResponse(user, token);
         ApiResponse<LoginResponse> apiResponse = ApiResponse.success(response);
+        log.info("Login user successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 }

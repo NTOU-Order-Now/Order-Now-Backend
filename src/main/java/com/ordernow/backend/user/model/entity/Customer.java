@@ -1,6 +1,5 @@
 package com.ordernow.backend.user.model.entity;
 
-import com.ordernow.backend.order.model.entity.Order;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,7 +17,7 @@ import java.util.List;
 public class Customer extends User{
     private List<String> storeCollection;
 
-    public Customer() {
+    public Customer() {// Springboot need it
         super();
         storeCollection = new ArrayList<>();
     }

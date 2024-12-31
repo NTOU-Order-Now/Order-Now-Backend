@@ -2,6 +2,7 @@ package com.ordernow.backend.order.controller.v1;
 
 import com.ordernow.backend.auth.model.entity.CustomUserDetail;
 import com.ordernow.backend.common.dto.ApiResponse;
+import com.ordernow.backend.common.dto.PageResponse;
 import com.ordernow.backend.order.model.entity.Order;
 import com.ordernow.backend.order.model.entity.OrderedStatus;
 import com.ordernow.backend.order.service.OrderService;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,19 +24,19 @@ import java.util.Set;
 public class OrderController {
 
     private final OrderService orderService;
-    private static final Set<String> ALLOWED_ORDER_STATUS = Set.of("PENDING", "PROCESSING", "COMPLETED", "PICKED_UP", "CANCELED");
+    private static final Set<String> ALLOWED_ORDER_STATUS = Set.of("PENDING", "PROCESSING", "COMPLETED", "PICKED_UP", "CANCELED", "");
 
     @Autowired
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
 
-    @PatchMapping("/{orderId}")
+    @PatchMapping("/{orderId}/status")
     public ResponseEntity<ApiResponse<Void>> updateOrderStatus(
             @PathVariable("orderId") String orderId,
             @RequestParam(value = "status") OrderedStatus status,
             @AuthenticationPrincipal CustomUserDetail customUserDetail)
-            throws NoSuchElementException, IllegalStateException {
+            throws NoSuchElementException, IllegalArgumentException, IllegalStateException {
 
         if(!ALLOWED_ORDER_STATUS.contains(status.toString())) {
             throw new IllegalArgumentException("Invalid order status");
@@ -46,22 +48,35 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
+    @PatchMapping("/{orderId}/pickup-time")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ApiResponse<Void>> updatePickupTime(
+            @PathVariable("orderId") String orderId,
+            @RequestParam(value = "pickupTime") int pickupTime)
+            throws NoSuchElementException {
+
+        orderService.updatePickupTime(orderId, pickupTime);
+        ApiResponse<Void> apiResponse = ApiResponse.success(null);
+        log.info("Update order pickup time to {} successfully", pickupTime);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<Order>>> searchOrder(
+    public ResponseEntity<ApiResponse<PageResponse<Order>>> searchOrder(
             @RequestParam(value="page", defaultValue = "0") int page,
             @RequestParam(value="size", defaultValue = "10") int size,
-            @RequestParam(value="status") OrderedStatus status,
+            @RequestParam(value="status", required = false) OrderedStatus status,
             @AuthenticationPrincipal CustomUserDetail customUserDetail)
-            throws NoSuchElementException, IllegalArgumentException {
+            throws IllegalArgumentException {
 
-        if(!ALLOWED_ORDER_STATUS.contains(status.toString())) {
+        if(status != null && !ALLOWED_ORDER_STATUS.contains(status.toString())) {
             throw new IllegalArgumentException("Invalid order status");
         }
 
-        List<Order> orderList = orderService.getOrderListByStatus(
+        PageResponse<Order> orders = orderService.getOrderListByStatus(
                 customUserDetail, status, page, size);
-        ApiResponse<List<Order>> apiResponse = ApiResponse.success(orderList);
-        log.info("User filter order successfully");
+        ApiResponse<PageResponse<Order>> apiResponse = ApiResponse.success(orders);
+        log.info("User search order successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 }

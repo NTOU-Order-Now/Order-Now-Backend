@@ -18,10 +18,12 @@ public class Order {
     private String customerId;
     private String storeId;
     private Double cost;
+    private String note;
     private OrderedStatus status;
     private List<OrderedDish> orderedDishes;
     private LocalTime orderTime;
     private LocalTime acceptTime;
+    private Boolean isReserved = false;
     private Integer estimatedPrepTime;
 
     public Order() {

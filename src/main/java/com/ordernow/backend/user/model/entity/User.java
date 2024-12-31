@@ -19,6 +19,14 @@ public class User {
     private Gender gender = Gender.OTHER;
     private Role role;
 
+    public User(String name, String email, String password, Role role) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.gender = Gender.OTHER;
+    }
+
     public User(User user) {
         this.id = user.getId();
         this.name = user.getName();

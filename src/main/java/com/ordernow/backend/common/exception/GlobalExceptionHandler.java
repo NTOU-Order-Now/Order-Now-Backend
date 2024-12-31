@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException exception) {
         ApiResponse<Void> apiResponse = ApiResponse.error(400, exception.getMessage());
         return ResponseEntity.status(400).body(apiResponse);
@@ -31,6 +31,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RequestValidationException.class)
     public ResponseEntity<ApiResponse<Void>> handleRequestValidationException(RequestValidationException exception) {
+        ApiResponse<Void> apiResponse = ApiResponse.error(400, exception.getMessage());
+        return ResponseEntity.status(400).body(apiResponse);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalStateException(IllegalStateException exception) {
         ApiResponse<Void> apiResponse = ApiResponse.error(400, exception.getMessage());
         return ResponseEntity.status(400).body(apiResponse);
     }

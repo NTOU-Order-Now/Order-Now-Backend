@@ -1,8 +1,11 @@
 package com.ordernow.backend.order.service;
 
 import com.ordernow.backend.auth.model.entity.CustomUserDetail;
+import com.ordernow.backend.common.dto.PageResponse;
+import com.ordernow.backend.menu.service.MenuService;
 import com.ordernow.backend.notification.model.dto.Notification;
 import com.ordernow.backend.order.model.entity.Order;
+import com.ordernow.backend.order.model.entity.OrderedDish;
 import com.ordernow.backend.order.model.entity.OrderedStatus;
 import com.ordernow.backend.order.repository.OrderRepository;
 import com.ordernow.backend.user.model.entity.Merchant;
@@ -10,8 +13,10 @@ import com.ordernow.backend.user.model.entity.Role;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -26,13 +31,15 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher eventPublisher;
     private static final Set<String> CUSTOMER_ALLOWED_TO_UPDATED_STATUS = Set.of("CANCELED", "PICKED_UP");
-    private static final Set<String> MERCHANT_ALLOWED_TO_UPDATED_STATUS = Set.of("CANCELED", "PROCESSING", "COMPLETED");
+    private static final Set<String> MERCHANT_ALLOWED_TO_UPDATED_STATUS = Set.of("CANCELED", "PROCESSING", "COMPLETED", "PICKED_UP");
+    private final MenuService menuService;
 
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, ApplicationEventPublisher eventPublisher) {
+    public OrderService(OrderRepository orderRepository, ApplicationEventPublisher eventPublisher, MenuService menuService) {
         this.orderRepository = orderRepository;
         this.eventPublisher = eventPublisher;
+        this.menuService = menuService;
     }
 
     public Order getOrderAndValid(String orderId)
@@ -47,7 +54,7 @@ public class OrderService {
     }
 
     public void updateStatus(CustomUserDetail userDetail, String orderId, OrderedStatus status)
-            throws NoSuchElementException, IllegalStateException { // Bug
+            throws NoSuchElementException, IllegalStateException {
 
         Order order = getOrderAndValid(orderId);
         Role role = userDetail.getRole();
@@ -79,6 +86,9 @@ public class OrderService {
         if(status == OrderedStatus.PROCESSING) {
             order.setAcceptTime(LocalTime.now());
         }
+        if(status == OrderedStatus.PICKED_UP) {
+            updateSalesVolume(order.getOrderedDishes());
+        }
 
         orderRepository.save(order);
         eventPublisher.publishEvent(
@@ -89,16 +99,52 @@ public class OrderService {
         );
     }
 
-    public List<Order> getOrderListByStatus(CustomUserDetail userDetail, OrderedStatus status, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public PageResponse<Order> getOrderListByStatus(
+            CustomUserDetail userDetail, OrderedStatus status,
+            int page, int size)
+            throws IllegalStateException {
 
+        if(page < 0 || size <= 0) {
+            throw new IllegalArgumentException("Invalid page number or page size");
+        }
+
+        Page<Order> orders = null;
         if(userDetail.getRole() == Role.CUSTOMER) {
-            return orderRepository.findAllByCustomerIdAndStatus(userDetail.getId(), status, pageable);
+            Sort sort = Sort.by(Sort.Direction.DESC, "orderTime");
+            Pageable pageable = PageRequest.of(page, size, sort);
+            if(status == null)
+                orders = orderRepository.findAllByCustomerIdAndStatusNot(userDetail.getId(), OrderedStatus.IN_CART, pageable);
+            else
+                orders = orderRepository.findAllByCustomerIdAndStatus(userDetail.getId(), status, pageable);
         }
-        if(userDetail.getRole() == Role.MERCHANT) {
+        else if(userDetail.getRole() == Role.MERCHANT) {
+            Sort sort = Sort.by(Sort.Direction.ASC, "orderTime");
+            Pageable pageable = PageRequest.of(page, size, sort);
             Merchant merchant = (Merchant) userDetail.getUser();
-            return orderRepository.findAllByStoreIdAndStatus(merchant.getStoreId(), status, pageable);
+            if(status == null)
+                orders = orderRepository.findAllByStoreIdAndStatusNot(merchant.getStoreId(), OrderedStatus.IN_CART, pageable);
+            else
+                orders = orderRepository.findAllByStoreIdAndStatus(merchant.getStoreId(), status, pageable);
         }
-        return null;
+        else {
+            return null;
+        }
+
+        return PageResponse.of(orders);
+    }
+
+    public void updatePickupTime(String orderId, int pickupTime)
+            throws NoSuchElementException {
+
+        Order order = getOrderAndValid(orderId);
+        order.setIsReserved(true);
+        order.setEstimatedPrepTime(pickupTime);
+        orderRepository.save(order);
+    }
+
+    public void updateSalesVolume(List<OrderedDish> dishes) {
+        for(OrderedDish dish : dishes) {
+            menuService.updateSalesVolume(dish.getDishId(), dish.getQuantity());
+        }
     }
 }

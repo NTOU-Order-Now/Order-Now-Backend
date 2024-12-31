@@ -62,7 +62,18 @@ public class StoreController {
 
         List<Store> stores = storeService.getStoreByIds(storeIds);
         ApiResponse<List<Store>> apiResponse = ApiResponse.success(stores);
-        log.info("Get stores successfully");
+        log.info("Get store list successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @GetMapping("/{storeId}")
+    public ResponseEntity<ApiResponse<Store>> getStoreById(
+            @PathVariable String storeId)
+            throws NoSuchElementException {
+
+        Store store = storeService.validStoreId(storeId);
+        ApiResponse<Store> apiResponse = ApiResponse.success(store);
+        log.info("Get store successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 

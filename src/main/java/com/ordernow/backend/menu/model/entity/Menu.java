@@ -15,7 +15,7 @@ import java.util.List;
 public class Menu {
     @Id
     private String id;
-    private List<Pair<String, List<String>>> categories;
+    private List<Category> categories;
 
     public Menu() {
         categories = new ArrayList<>();

@@ -1,5 +1,6 @@
 package com.ordernow.backend.user.service;
 
+import com.ordernow.backend.user.model.dto.UserResponse;
 import com.ordernow.backend.user.model.entity.User;
 import com.ordernow.backend.auth.repository.UserRepository;
 import com.ordernow.backend.user.model.dto.UserProfileRequest;
@@ -29,6 +30,11 @@ public class UserService {
 
     public void deleteUser(String id) {
         userRepository.deleteById(id);
+    }
+
+    public UserResponse getUserResponseById(String userId) {
+        User user = userRepository.findById(userId).orElseThrow(NoSuchElementException::new);
+        return UserResponse.fromUser(user);
     }
 
     public void updateProfile(String userId, UserProfileRequest userProfileRequest)

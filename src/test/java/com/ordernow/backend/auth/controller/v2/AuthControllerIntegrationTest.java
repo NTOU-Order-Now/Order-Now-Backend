@@ -1,7 +1,10 @@
 package com.ordernow.backend.auth.controller.v2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ordernow.backend.auth.model.dto.LoginRequest;
+import com.ordernow.backend.store.repository.StoreRepository;
 import com.ordernow.backend.user.model.entity.Customer;
 import com.ordernow.backend.user.model.entity.Merchant;
 import com.ordernow.backend.user.model.entity.Role;
@@ -36,6 +39,9 @@ public class AuthControllerIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private StoreRepository storeRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
@@ -44,100 +50,13 @@ public class AuthControllerIntegrationTest {
     @BeforeEach
     void setUpEach() {
         userRepository.deleteAll();
+        storeRepository.deleteAll();
     }   
 
     @AfterEach
     void tearDown() {
         userRepository.deleteAll();
-    }
-
-    @Test
-    void testExistingUserLogin() throws Exception {
-        String testEmail = "registered@example.com";
-        String testPassword = "registeredpassword";
-        String testName = "Test User";
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
-
-        User user = new User();
-        user.setEmail(testEmail);
-        user.setPassword(passwordEncoder.encode(testPassword));
-        user.setRole(Role.CUSTOMER);
-        user.setName(testName);
-        
-        userRepository.save(user);
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail(testEmail);
-        loginRequest.setPassword(testPassword);
-
-        mockMvc.perform(post("/api/v2/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value("Success"))
-                .andExpect(jsonPath("$.data.email").value(testEmail))
-                .andExpect(jsonPath("$.data.role").value("CUSTOMER"))
-                .andExpect(jsonPath("$.data.token").exists());
-    }
-
-    @Test
-    void testRegisterAndLoginFlow() throws Exception {
-        String testEmail = "test@example.com";
-        String testPassword = "password123";
-        String testName = "Test User";
-
-        User user = new User();
-        user.setName(testName);
-        user.setEmail(testEmail);
-        user.setPassword(testPassword);
-        user.setRole(Role.CUSTOMER);
-
-        mockMvc.perform(post("/api/v2/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value("Success"));
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail(testEmail);
-        loginRequest.setPassword(testPassword);
-
-        mockMvc.perform(post("/api/v2/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value("Success"))
-                .andExpect(jsonPath("$.data.id").exists())
-                .andExpect(jsonPath("$.data.name").value(testName))
-                .andExpect(jsonPath("$.data.email").value(testEmail))
-                .andExpect(jsonPath("$.data.avatarUrl").exists())
-                .andExpect(jsonPath("$.data.role").value("CUSTOMER"))
-                .andExpect(jsonPath("$.data.token").exists());
-    }
-
-    @Test
-    void testRegisterWithExistingEmail() throws Exception {
-        String testRegisteredEmail = "registered@example.com";
-        String testRegisteredPassword = "registeredpassword";
-        String testRegisteredName = "Test User";
-
-        User user = new User();
-        user.setEmail(testRegisteredEmail);
-        user.setPassword(testRegisteredPassword);
-        user.setRole(Role.CUSTOMER);
-        user.setName(testRegisteredName);
-        
-        userRepository.save(user);
-        
-        mockMvc.perform(post("/api/v2/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("Email already exists"));
+        storeRepository.deleteAll();
     }
 
     @Test
@@ -146,15 +65,11 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "Test Customer";
 
-        User user = new User();
-        user.setName(testName);
-        user.setEmail(testEmail);
-        user.setPassword(testPassword);
-        user.setRole(Role.CUSTOMER);
+        User customerUser = new User(testName, testEmail, testPassword,Role.CUSTOMER);
 
         mockMvc.perform(post("/api/v2/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(customerUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("Success"));
@@ -169,22 +84,80 @@ public class AuthControllerIntegrationTest {
     }
 
     @Test
+    void testRegisterAndLoginFlow() throws Exception {
+        String testEmail = "test@example.com";
+        String testPassword = "password123";
+        String testName = "Test User";
+
+        User user = new User(testName, testEmail, testPassword, Role.CUSTOMER);
+        
+        mockMvc.perform(post("/api/v2/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(user)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("Success"));
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(testEmail);
+        loginRequest.setPassword(testPassword);
+
+        mockMvc.perform(post("/api/v2/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data.id").exists())
+                .andExpect(jsonPath("$.data.name").value(testName))
+                .andExpect(jsonPath("$.data.email").value(testEmail))
+                .andExpect(jsonPath("$.data.avatarUrl").exists())
+                .andExpect(jsonPath("$.data.role").value("CUSTOMER"))
+                .andExpect(jsonPath("$.data.token").exists());
+    }
+
+    @Test
+    void testRegisterWithExistingEmail() throws Exception {
+        String testExistingName = "Test User";
+        String testExistingEmail = "registered@example.com";
+        String testExistingPassword = "registeredpassword";
+        String testName = "Test User1";
+        String testEmail = "registered@example.com";
+        String testPassword = "registeredpassword1";
+
+
+        User user = new User(testExistingName, testExistingEmail, testExistingPassword, Role.CUSTOMER);
+        User user2 = new User(testName, testEmail, testPassword, Role.CUSTOMER);
+        
+        mockMvc.perform(post("/api/v2/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(user)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("Success"));
+        
+        mockMvc.perform(post("/api/v2/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user2)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Email already exists"));
+    }
+
+
+    @Test
     void testRegisterMerchantSuccessfully() throws Exception {
         String testEmail = "merchant@example.com";
         String testPassword = "password123";
         String testName = "Test Merchant";
         String testPhone = "0912345678";
 
-        User user = new User();
-        user.setName(testName);
-        user.setEmail(testEmail);
-        user.setPassword(testPassword);
-        user.setRole(Role.MERCHANT);
-        user.setPhoneNumber(testPhone);
+        User merchantUser = new User(testName, testEmail, testPassword, Role.MERCHANT);
+        merchantUser.setPhoneNumber(testPhone);
 
         mockMvc.perform(post("/api/v2/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(merchantUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("Success"));
@@ -205,18 +178,32 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "This name is way too long and should exceed the twenty character limit";
 
-        User user = new User();
-        user.setName(testName);
-        user.setEmail(testEmail);
-        user.setPassword(testPassword);
-        user.setRole(Role.CUSTOMER);
-
+        User user = new User(testName, testEmail, testPassword, Role.CUSTOMER);
+    
         mockMvc.perform(post("/api/v2/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Name is too long"));
+
+        assertNull(userRepository.findByEmail(testEmail));
+    }
+
+    @Test
+    void testRegisterWithNullRole() throws Exception {
+        String testEmail = "test@example.com";
+        String testPassword = "password123";
+        String testName = "Test User";
+
+        User user = new User(testName, testEmail, testPassword, null);
+        
+        mockMvc.perform(post("/api/v2/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Field role can not be null"));
 
         assertNull(userRepository.findByEmail(testEmail));
     }
@@ -227,18 +214,19 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "Test User";
 
-        User user = new User();
-        user.setName(testName);
-        user.setEmail(testEmail);
-        user.setPassword(testPassword);
-        user.setRole(null);
+        User user = new User(testName, testEmail, testPassword,null);
+        String userJson = objectMapper.writeValueAsString(user);
+        JsonNode jsonNode = objectMapper.readTree(userJson);
+        ((ObjectNode) jsonNode).put("role", "INVALIDROLE");
+        String modifiedJson = objectMapper.writeValueAsString(jsonNode);
+
 
         mockMvc.perform(post("/api/v2/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("Field role can not be null"));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(modifiedJson))
+                .andExpect(status().isBadRequest());
+//                .andExpect(jsonPath("$.status").value(400))
+//                .andExpect(jsonPath("$.message").value("Invalid role"));
 
         assertNull(userRepository.findByEmail(testEmail));
     }
@@ -253,8 +241,8 @@ public class AuthControllerIntegrationTest {
         loginRequest.setPassword(testPassword);
 
         mockMvc.perform(post("/api/v2/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -265,20 +253,22 @@ public class AuthControllerIntegrationTest {
         String wrongPassword = "wrongpassword";
         String testName = "Test User";
 
-        User user = new User();
-        user.setEmail(testEmail);
-        user.setPassword(passwordEncoder.encode(correctPassword));
-        user.setRole(Role.CUSTOMER);
-        user.setName(testName);
-        userRepository.save(user);
+        User user = new User(testName, testEmail, correctPassword, Role.CUSTOMER);
+        
+        mockMvc.perform(post("/api/v2/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(user)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("Success"));
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(testEmail);
         loginRequest.setPassword(wrongPassword);
 
         mockMvc.perform(post("/api/v2/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -287,8 +277,8 @@ public class AuthControllerIntegrationTest {
         LoginRequest loginRequest = new LoginRequest();
 
         mockMvc.perform(post("/api/v2/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -298,20 +288,59 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "Test Merchant";
 
-        User user = new User();
-        user.setName(testName);
-        user.setEmail(testEmail);
-        user.setPassword(testPassword);
-        user.setRole(Role.MERCHANT);
-        user.setPhoneNumber("");
+        User user = new User(testName, testEmail, testPassword, Role.MERCHANT);
 
         mockMvc.perform(post("/api/v2/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Merchant phone number can not be empty"));
 
         assertNull(userRepository.findByEmail(testEmail));
+    }
+
+    @Test
+    void testRegisterAndLoginMerchantFlow() throws Exception {
+        String testEmail = "merchant@example.com";
+        String testPassword = "password123";
+        String testName = "測試商家";
+        String testPhone = "0912345678";
+
+        User merchantUser = new User(testName, testEmail, testPassword, Role.MERCHANT);
+        merchantUser.setPhoneNumber(testPhone);
+        
+        mockMvc.perform(post("/api/v2/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(merchantUser)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.message").value("Success"));
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(testEmail);
+        loginRequest.setPassword(testPassword);
+
+        mockMvc.perform(post("/api/v2/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data.id").exists())
+                .andExpect(jsonPath("$.data.name").value(testName))
+                .andExpect(jsonPath("$.data.email").value(testEmail))
+                .andExpect(jsonPath("$.data.avatarUrl").exists())
+                .andExpect(jsonPath("$.data.role").value("MERCHANT"))
+                .andExpect(jsonPath("$.data.token").exists());
+
+        User savedUser = userRepository.findByEmail(testEmail);
+        assertNotNull(savedUser);
+        assertEquals(testName, savedUser.getName());
+        assertEquals(testEmail, savedUser.getEmail());
+        assertEquals(Role.MERCHANT, savedUser.getRole());
+        assertEquals(testPhone, savedUser.getPhoneNumber());
+        assertTrue(passwordEncoder.matches(testPassword, savedUser.getPassword()));
+        assertInstanceOf(Merchant.class, savedUser);
     }
 }

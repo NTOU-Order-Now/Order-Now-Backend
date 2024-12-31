@@ -1,8 +1,11 @@
 package com.ordernow.backend.security.config;
 
+import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.security.jwt.JWTFilter;
 import com.ordernow.backend.security.provider.CustomAuthenticationProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -28,7 +31,10 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class SecurityConfig {
+    @Value("${cors.allowedOrigins}")
+    private String allowedOrigins;
 
     private final CustomAuthenticationProvider authenticationProvider;
     private final JWTFilter jwtFilter;
@@ -47,8 +53,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.emptyList()); // 清空 allowedOrigins
-        configuration.setAllowedOriginPatterns(Collections.singletonList("*")); // 使用 pattern 匹配所有來源
+        configuration.setAllowedOriginPatterns(List.of(allowedOrigins));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
@@ -63,6 +68,18 @@ public class SecurityConfig {
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors->cors.configurationSource(corsConfigurationSource()))
+
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            ApiResponse.handleError(response, 401, authException.getMessage());
+                            log.error(authException.getMessage());
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            ApiResponse.handleError(response, 403, accessDeniedException.getMessage());
+                            log.error(accessDeniedException.getMessage());
+                        })
+                )
+
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/websocket/**").permitAll()
                         .requestMatchers("/api/*/admin/**").permitAll()

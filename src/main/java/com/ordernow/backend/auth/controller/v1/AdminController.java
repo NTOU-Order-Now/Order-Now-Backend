@@ -22,7 +22,7 @@ public class AdminController {
         this.userService = userService;
     }
 
-    @GetMapping("")
+    @GetMapping()
     public ResponseEntity<ApiResponse<List<User>>> getAllUsers() {
 
         List<User> users = userService.getAllUsers();
@@ -30,7 +30,7 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
-    @DeleteMapping("")
+    @DeleteMapping()
     public ResponseEntity<ApiResponse<Void>> deleteUser(
             @RequestParam("id") String id) {
 

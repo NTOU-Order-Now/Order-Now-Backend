@@ -1,13 +1,17 @@
 package com.ordernow.backend.security.handler;
 
+import com.ordernow.backend.auth.model.dto.LoginResponse;
 import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.security.jwt.JWTService;
+import com.ordernow.backend.user.model.entity.LoginType;
+import com.ordernow.backend.user.model.entity.User;
 import com.ordernow.backend.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -33,7 +37,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication)
-            throws IOException {
+            throws IOException, IllegalArgumentException {
 
         if (response.isCommitted()) {
             log.debug("Response has already been committed");
@@ -47,20 +51,21 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String avatarUrl = oAuth2User.getAttribute("picture");
 
         Map<String, Object> result = new HashMap<>();
-        if(userService.getUserByEmail(email) == null) { // register
+        User user = userService.getUserByEmail(email);
+        if(user == null) { // register
             String temporaryToken = jwtService.generateTemporaryToken(email);
             result.put("isNewUser", true);
             result.put("email", email);
             result.put("name", name);
-            result.put("picture", avatarUrl);
+            result.put("avatarUrl", avatarUrl);
             result.put("temporaryToken", temporaryToken);
-        } else { // login
+            ApiResponse.handleSuccess(response, result);
+        } else if(user.getLoginType() == LoginType.GOOGLE){ // login
             String token = jwtService.generateToken(email);
-            result.put("name", name);
-            result.put("email", email);
-            result.put("token", token);
+            LoginResponse loginResponse = LoginResponse.createResponse(user, token);
+            ApiResponse.handleSuccess(response, loginResponse);
+        } else {
+            throw new IllegalArgumentException("Email already exists");
         }
-
-        ApiResponse.handleSuccess(response, result);
     }
 }

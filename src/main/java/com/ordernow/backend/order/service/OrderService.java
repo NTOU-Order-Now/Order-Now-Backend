@@ -1,6 +1,7 @@
 package com.ordernow.backend.order.service;
 
 import com.ordernow.backend.auth.model.entity.CustomUserDetail;
+import com.ordernow.backend.auth.service.EmailService;
 import com.ordernow.backend.common.dto.PageResponse;
 import com.ordernow.backend.menu.service.MenuService;
 import com.ordernow.backend.notification.model.dto.Notification;
@@ -10,6 +11,7 @@ import com.ordernow.backend.order.model.entity.OrderedStatus;
 import com.ordernow.backend.order.repository.OrderRepository;
 import com.ordernow.backend.user.model.entity.Merchant;
 import com.ordernow.backend.user.model.entity.Role;
+import com.ordernow.backend.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -33,13 +35,17 @@ public class OrderService {
     private static final Set<String> CUSTOMER_ALLOWED_TO_UPDATED_STATUS = Set.of("CANCELED", "PICKED_UP");
     private static final Set<String> MERCHANT_ALLOWED_TO_UPDATED_STATUS = Set.of("CANCELED", "PROCESSING", "COMPLETED", "PICKED_UP");
     private final MenuService menuService;
+    private final EmailService emailService;
+    private final UserService userService;
 
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, ApplicationEventPublisher eventPublisher, MenuService menuService) {
+    public OrderService(OrderRepository orderRepository, ApplicationEventPublisher eventPublisher, MenuService menuService, EmailService emailService, UserService userService) {
         this.orderRepository = orderRepository;
         this.eventPublisher = eventPublisher;
         this.menuService = menuService;
+        this.emailService = emailService;
+        this.userService = userService;
     }
 
     public Order getOrderAndValid(String orderId)
@@ -88,6 +94,10 @@ public class OrderService {
         }
         if(status == OrderedStatus.PICKED_UP) {
             updateSalesVolume(order.getOrderedDishes());
+            String email = userService.getUserById(order.getCustomerId()).getEmail();
+            emailService.sendEmail(email,
+                    "Pick up notification",
+                    String.format("Order Id: %s\n可以取餐了", order.getId()));
         }
 
         orderRepository.save(order);

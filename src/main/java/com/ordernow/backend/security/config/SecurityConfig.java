@@ -84,6 +84,7 @@ public class SecurityConfig {
                         .requestMatchers("/websocket/**").permitAll()
                         .requestMatchers("/api/*/admin/**").permitAll()
                         .requestMatchers("/api/*/stores/**").permitAll()
+                        .requestMatchers("/api/*/email/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/*/menu/**", "/api/*/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/*/auth/login","/api/*/auth/register", "/api/*/reviews/**").permitAll()
                         .anyRequest().authenticated())

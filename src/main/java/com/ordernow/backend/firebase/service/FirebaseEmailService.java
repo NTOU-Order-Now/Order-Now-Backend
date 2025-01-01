@@ -1,5 +1,6 @@
 package com.ordernow.backend.firebase.service;
 
+import com.google.firebase.auth.ActionCodeSettings;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ public class FirebaseEmailService {
         try {
             String link = FirebaseAuth.getInstance().generatePasswordResetLink(email);
             log.info("Password reset link generated successfully");
+            System.out.println(link);
         } catch (FirebaseAuthException e) {
             log.error("Failed to send password reset email", e);
             throw new RuntimeException("Failed to send password reset email", e);
@@ -23,6 +25,7 @@ public class FirebaseEmailService {
         try {
             String link = FirebaseAuth.getInstance().generateEmailVerificationLink(email);
             log.info("Email verification link generated successfully");
+            System.out.println(link);
         } catch (FirebaseAuthException e) {
             log.error("Failed to send email verification link", e);
             throw new RuntimeException("Failed to send email verification link", e);

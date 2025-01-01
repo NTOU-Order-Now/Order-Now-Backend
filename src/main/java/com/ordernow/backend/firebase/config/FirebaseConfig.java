@@ -7,6 +7,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 
 import java.io.FileInputStream;
 
@@ -21,8 +22,9 @@ public class FirebaseConfig {
     public void initialize() {
         log.info("Initializing Firebase Config");
         try {
+            ClassPathResource resource = new ClassPathResource(credentialsPath);
             FileInputStream serviceAccount =
-                    new FileInputStream(credentialsPath);
+                    new FileInputStream(resource.getFile());
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -30,6 +32,7 @@ public class FirebaseConfig {
 
             if(FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
+                log.info("Firebase initialization successfully");
             }
 
         } catch (Exception e) {

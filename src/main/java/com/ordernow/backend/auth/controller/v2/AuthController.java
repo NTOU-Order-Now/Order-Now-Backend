@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.NoSuchElementException;
+
 @RestController("AuthControllerV2")
 @RequestMapping("/api/v2/auth")
 @Slf4j
@@ -47,11 +49,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> loginUser(
             @RequestBody LoginRequest loginRequest)
-            throws AuthenticationServiceException, RequestValidationException {
+            throws AuthenticationServiceException, RequestValidationException, NoSuchElementException {
 
         RequestValidator.validateRequest(loginRequest);
         String token = authService.verify(loginRequest);
-        User user = userService.getUserByEmail(loginRequest.getEmail());
+        User user = userService.findByEmail(loginRequest.getEmail());
 
         LoginResponse response = LoginResponse.createResponse(user, token);
         ApiResponse<LoginResponse> apiResponse = ApiResponse.success(response);

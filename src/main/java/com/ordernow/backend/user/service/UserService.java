@@ -20,8 +20,14 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public User findByEmail(String email)
+            throws NoSuchElementException {
+
+        User user = userRepository.findByEmail(email);
+        if(user == null) {
+            throw new NoSuchElementException("User not found");
+        }
+        return user;
     }
 
     public List<User> getAllUsers() {

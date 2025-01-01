@@ -37,18 +37,18 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
-        try {
-            String token = authService.verify(loginRequest);
-            User user = userService.getUserByEmail(loginRequest.getEmail());
-            log.info("Fetch API: login Success");
-            return ResponseEntity.status(HttpStatus.OK)
-                    .header("Authorization", "Bearer " + token)
-                    .body(user.getId());
-        } catch (Exception e) {
-            log.error("Login failed for email: {}", loginRequest.getEmail(), e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: " + e.getMessage());
-        }
-    }
+//    @PostMapping("/login")
+//    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
+//        try {
+//            String token = authService.verify(loginRequest);
+//            User user = userService.findByEmail(loginRequest.getEmail());
+//            log.info("Fetch API: login Success");
+//            return ResponseEntity.status(HttpStatus.OK)
+//                    .header("Authorization", "Bearer " + token)
+//                    .body(user.getId());
+//        } catch (Exception e) {
+//            log.error("Login failed for email: {}", loginRequest.getEmail(), e);
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: " + e.getMessage());
+//        }
+//    }
 }

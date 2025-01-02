@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Notification {
     private String orderId;
+    private String storeId;
     private OrderedStatus status;
     private String timestamp;
 }

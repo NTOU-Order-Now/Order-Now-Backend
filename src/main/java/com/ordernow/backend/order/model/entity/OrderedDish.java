@@ -19,6 +19,7 @@ public class OrderedDish {
     private Double price;
     private Integer quantity;
     private String note;
+    private String storeId;
     private List<ChosenAttribute> chosenAttributes;
 
 

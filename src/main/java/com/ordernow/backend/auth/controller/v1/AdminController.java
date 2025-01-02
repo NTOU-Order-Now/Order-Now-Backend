@@ -1,5 +1,7 @@
 package com.ordernow.backend.auth.controller.v1;
 
+import com.ordernow.backend.order.model.entity.OrderedStatus;
+import com.ordernow.backend.order.repository.OrderRepository;
 import com.ordernow.backend.user.service.UserService;
 import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.user.model.entity.User;
@@ -16,10 +18,12 @@ import java.util.List;
 @Slf4j
 public class AdminController {
     private final UserService userService;
+    private final OrderRepository orderRepository;
 
     @Autowired
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, OrderRepository orderRepository) {
         this.userService = userService;
+        this.orderRepository = orderRepository;
     }
 
     @GetMapping()
@@ -30,11 +34,27 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
-    @DeleteMapping()
+    @DeleteMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
-            @RequestParam("id") String id) {
+            @PathVariable String userId) {
 
-        userService.deleteUser(id);
+        userService.deleteUser(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/order/{orderId}")
+    public ResponseEntity<ApiResponse<Void>> deleteOrder(
+            @PathVariable String orderId) {
+
+        orderRepository.deleteById(orderId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/order")
+    public ResponseEntity<ApiResponse<Void>> deleteOrder(
+            @RequestParam OrderedStatus status) {
+
+        orderRepository.deleteByStatus(status);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(null));
     }
 }

@@ -22,7 +22,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
-import java.time.LocalTime;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -98,7 +99,7 @@ public class CartService {
                 .setOnInsert("cost", 0.0)
                 .setOnInsert("status", OrderedStatus.IN_CART)
                 .setOnInsert("orderedDishes", new ArrayList<>())
-                .setOnInsert("orderTime", LocalTime.now())
+                .setOnInsert("orderTime", LocalDateTime.now())
                 .setOnInsert("estimatedPrepTime", 0);
 
         return mongoTemplate.findAndModify(
@@ -204,7 +205,7 @@ public class CartService {
         cart.setNote(note);
 
         cart.setStatus(OrderedStatus.PENDING);
-        cart.setOrderTime(LocalTime.now());
+        cart.setOrderTime(LocalDateTime.now());
         Order savedOrder = orderRepository.save(cart);
 
         Notification notification = new Notification(

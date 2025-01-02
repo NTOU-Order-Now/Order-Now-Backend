@@ -19,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -84,7 +84,7 @@ public class OrderService {
 
         order.setStatus(status);
         if(status == OrderedStatus.PROCESSING) {
-            order.setAcceptTime(LocalTime.now());
+            order.setAcceptTime(LocalDateTime.now());
         }
         if(status == OrderedStatus.PICKED_UP) {
             updateSalesVolume(order.getOrderedDishes());

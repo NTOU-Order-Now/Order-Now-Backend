@@ -51,5 +51,4 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed: " + e.getMessage());
         }
     }
-
 }

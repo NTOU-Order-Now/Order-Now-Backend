@@ -20,11 +20,12 @@ public class User {
     private Role role;
     private LoginType loginType;
 
-    public User(String name, String email, String password, Role role) {
+    public User(String name, String email, String password, Role role, LoginType loginType) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.loginType = loginType;
     }
 
     public User(User user) {

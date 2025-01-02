@@ -2,6 +2,7 @@ package com.ordernow.backend.order.service;
 
 import com.ordernow.backend.menu.model.entity.AttributeOption;
 import com.ordernow.backend.menu.model.entity.DishAttribute;
+import com.ordernow.backend.notification.model.dto.Notification;
 import com.ordernow.backend.order.model.dto.NoteRequest;
 import com.ordernow.backend.order.model.dto.OrderedDishPatchRequest;
 import com.ordernow.backend.menu.model.entity.Dish;
@@ -14,6 +15,7 @@ import com.ordernow.backend.menu.repository.DishRepository;
 import com.ordernow.backend.order.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -30,15 +32,17 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CartService {
 
+    private final ApplicationEventPublisher eventPublisher;
     private final OrderRepository orderRepository;
     private final DishRepository dishRepository;
     private final MongoTemplate mongoTemplate;
 
     @Autowired
-    public CartService(OrderRepository orderRepository, DishRepository dishRepository, MongoTemplate mongoTemplate) {
+    public CartService(OrderRepository orderRepository, DishRepository dishRepository, MongoTemplate mongoTemplate, ApplicationEventPublisher eventPublisher) {
         this.orderRepository = orderRepository;
         this.dishRepository = dishRepository;
         this.mongoTemplate = mongoTemplate;
+        this.eventPublisher = eventPublisher;
     }
 
     public Order findCart(String customerId) {
@@ -201,7 +205,17 @@ public class CartService {
 
         cart.setStatus(OrderedStatus.PENDING);
         cart.setOrderTime(LocalTime.now());
-        return orderRepository.save(cart);
+        Order savedOrder = orderRepository.save(cart);
+
+        Notification notification = new Notification(
+                savedOrder.getId(),
+                savedOrder.getStoreId(),
+                savedOrder.getStatus(),
+                java.time.Instant.now().toString()
+        );
+        eventPublisher.publishEvent(notification);
+
+        return savedOrder;
     }
 
     public void updateOrderCostAndPrepTime(Order order) {

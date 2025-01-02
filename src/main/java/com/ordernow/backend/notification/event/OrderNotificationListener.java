@@ -22,6 +22,9 @@ public class OrderNotificationListener {
     public void handleOrderStatus(Notification notification) {
         log.info("Sending notification for orderId: {}", notification.getOrderId());
         log.info(notification.toString());
+        //send to Customer
         messagingTemplate.convertAndSend("/topic/order/"+notification.getOrderId(), notification);
+        //send to Merchant
+        messagingTemplate.convertAndSend("/topic/order/send/"+notification.getStoreId(), notification);
     }
 }

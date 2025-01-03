@@ -1,6 +1,7 @@
 package com.ordernow.backend.security.config;
 
 import com.ordernow.backend.common.dto.ApiResponse;
+import com.ordernow.backend.security.handler.OAuth2SuccessHandler;
 import com.ordernow.backend.security.jwt.JWTFilter;
 import com.ordernow.backend.security.provider.CustomAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
@@ -38,11 +39,13 @@ public class SecurityConfig {
 
     private final CustomAuthenticationProvider authenticationProvider;
     private final JWTFilter jwtFilter;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Autowired
-    public SecurityConfig(JWTFilter jwtFilter, CustomAuthenticationProvider authenticationProvider) {
+    public SecurityConfig(JWTFilter jwtFilter, CustomAuthenticationProvider authenticationProvider, OAuth2SuccessHandler oAuth2SuccessHandler) {
         this.authenticationProvider = authenticationProvider;
         this.jwtFilter = jwtFilter;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
     @Bean
@@ -81,14 +84,29 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(request -> request
+                        // OAuth2
+                        .requestMatchers("/oauth2/authorization/**").permitAll()
+                        .requestMatchers("/login/oauth2/code/**").permitAll()
+
+                        // WebSocket
                         .requestMatchers("/websocket/**").permitAll()
                         .requestMatchers("/api/*/admin/**").permitAll()
                         .requestMatchers("/api/*/stores/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/*/menu/**", "/api/*/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/*/auth/login","/api/*/auth/register", "/api/*/reviews/**").permitAll()
                         .anyRequest().authenticated())
+
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            ApiResponse.handleError(response, 401, "OAuth2 authentication failed");
+                            log.error(exception.getMessage());
+                            log.error("OAuth2 authentication failed", exception);
+                        })
+                )
+
                 .httpBasic(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())
                 .build();

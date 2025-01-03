@@ -1,6 +1,6 @@
 package com.ordernow.backend.data;
 
-import com.ordernow.backend.auth.repository.UserRepository;
+import com.ordernow.backend.user.repository.UserRepository;
 import com.ordernow.backend.order.repository.OrderRepository;
 import com.ordernow.backend.menu.repository.DishRepository;
 import com.ordernow.backend.menu.repository.MenuRepository;

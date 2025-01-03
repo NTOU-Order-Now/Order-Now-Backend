@@ -1,5 +1,6 @@
 package com.ordernow.backend.auth.model.dto;
 
+import com.ordernow.backend.user.model.entity.LoginType;
 import com.ordernow.backend.user.model.entity.Merchant;
 import com.ordernow.backend.user.model.entity.Role;
 import com.ordernow.backend.user.model.entity.User;
@@ -16,6 +17,7 @@ public class LoginResponse {
     private String email;
     private String avatarUrl;
     private Role role;
+    private LoginType loginType;
     private String storeId;
     private String token;
 
@@ -26,6 +28,7 @@ public class LoginResponse {
                 .email(user.getEmail())
                 .avatarUrl(user.getAvatarUrl())
                 .role(user.getRole())
+                .loginType(user.getLoginType())
                 .token(token).build();
 
         if(user instanceof Merchant) {

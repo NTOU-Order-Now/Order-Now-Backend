@@ -91,13 +91,14 @@ public class OrderService {
         order.setStatus(status);
         if(status == OrderedStatus.PROCESSING) {
             order.setAcceptTime(LocalDateTime.now());
-        }
-        if(status == OrderedStatus.PICKED_UP) {
-            updateSalesVolume(order.getOrderedDishes());
+        } else if(status == OrderedStatus.COMPLETED) {
             String email = userService.getUserById(order.getCustomerId()).getEmail();
+            String orderNumber = order.getId().substring(order.getId().length()-5);
             emailService.sendEmail(email,
                     "Pick up notification",
-                    String.format("Order Id: %s\n可以取餐了", order.getId()));
+                    String.format("單號: %s\n餐點已完成，可以取餐", orderNumber));
+        } else if(status == OrderedStatus.PICKED_UP) {
+            updateSalesVolume(order.getOrderedDishes());
         }
 
         orderRepository.save(order);

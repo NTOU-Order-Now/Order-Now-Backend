@@ -103,6 +103,7 @@ public class OrderService {
         orderRepository.save(order);
         eventPublisher.publishEvent(
                 new Notification(orderId,
+                        order.getStoreId(),
                         order.getStatus(),
                         java.time.Instant.now().toString()
                 )

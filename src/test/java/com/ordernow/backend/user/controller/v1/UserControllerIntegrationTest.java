@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ordernow.backend.auth.model.dto.LoginRequest;
 import com.ordernow.backend.user.model.dto.UserProfileRequest;
 import com.ordernow.backend.user.model.entity.*;
-import com.ordernow.backend.auth.repository.UserRepository;
+import com.ordernow.backend.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,9 +35,7 @@ public class UserControllerIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
-
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
-
+    
     String testCustomerEmail = "customer@example.com";
     String testCustomerPassword = "password123";
     String testCustomerName = "測試顧客";
@@ -66,7 +64,7 @@ public class UserControllerIntegrationTest {
 
     private String setupCustomer() throws Exception {
 
-        User customerUser = new User(testCustomerName, testCustomerEmail, testCustomerPassword, Role.CUSTOMER);
+        User customerUser = new User(testCustomerName, testCustomerEmail, testCustomerPassword, Role.CUSTOMER, LoginType.LOCAL);
         customerUser.setPhoneNumber(testCustomerPhone);
 
         mockMvc.perform(post("/api/v2/auth/register")
@@ -106,7 +104,7 @@ public class UserControllerIntegrationTest {
 
     private String setupMerchant() throws Exception {
 
-        User merchantUser = new User(testMerchantName, testMerchantEmail, testMerchantPassword, Role.MERCHANT);
+        User merchantUser = new User(testMerchantName, testMerchantEmail, testMerchantPassword, Role.MERCHANT, LoginType.LOCAL);
         merchantUser.setPhoneNumber(testMerchantPhone);
 
         mockMvc.perform(post("/api/v2/auth/register")

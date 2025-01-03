@@ -5,11 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.ordernow.backend.auth.model.dto.LoginRequest;
 import com.ordernow.backend.store.repository.StoreRepository;
-import com.ordernow.backend.user.model.entity.Customer;
-import com.ordernow.backend.user.model.entity.Merchant;
-import com.ordernow.backend.user.model.entity.Role;
-import com.ordernow.backend.user.model.entity.User;
-import com.ordernow.backend.auth.repository.UserRepository;
+import com.ordernow.backend.user.model.entity.*;
+import com.ordernow.backend.user.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +62,7 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "Test Customer";
 
-        User customerUser = new User(testName, testEmail, testPassword,Role.CUSTOMER);
+        User customerUser = new User(testName, testEmail, testPassword, Role.CUSTOMER, LoginType.LOCAL);
 
         mockMvc.perform(post("/api/v2/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,7 +86,7 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "Test User";
 
-        User user = new User(testName, testEmail, testPassword, Role.CUSTOMER);
+        User user = new User(testName, testEmail, testPassword, Role.CUSTOMER, LoginType.LOCAL);
         
         mockMvc.perform(post("/api/v2/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -126,8 +123,8 @@ public class AuthControllerIntegrationTest {
         String testPassword = "registeredpassword1";
 
 
-        User user = new User(testExistingName, testExistingEmail, testExistingPassword, Role.CUSTOMER);
-        User user2 = new User(testName, testEmail, testPassword, Role.CUSTOMER);
+        User user = new User(testExistingName, testExistingEmail, testExistingPassword, Role.CUSTOMER, LoginType.LOCAL);
+        User user2 = new User(testName, testEmail, testPassword, Role.CUSTOMER, LoginType.LOCAL);
         
         mockMvc.perform(post("/api/v2/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -152,7 +149,7 @@ public class AuthControllerIntegrationTest {
         String testName = "Test Merchant";
         String testPhone = "0912345678";
 
-        User merchantUser = new User(testName, testEmail, testPassword, Role.MERCHANT);
+        User merchantUser = new User(testName, testEmail, testPassword, Role.MERCHANT, LoginType.LOCAL);
         merchantUser.setPhoneNumber(testPhone);
 
         mockMvc.perform(post("/api/v2/auth/register")
@@ -178,7 +175,7 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "This name is way too long and should exceed the twenty character limit";
 
-        User user = new User(testName, testEmail, testPassword, Role.CUSTOMER);
+        User user = new User(testName, testEmail, testPassword, Role.CUSTOMER, LoginType.LOCAL);
     
         mockMvc.perform(post("/api/v2/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -196,7 +193,7 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "Test User";
 
-        User user = new User(testName, testEmail, testPassword, null);
+        User user = new User(testName, testEmail, testPassword, null, LoginType.LOCAL);
         
         mockMvc.perform(post("/api/v2/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -214,7 +211,7 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "Test User";
 
-        User user = new User(testName, testEmail, testPassword,null);
+        User user = new User(testName, testEmail, testPassword,null, LoginType.LOCAL);
         String userJson = objectMapper.writeValueAsString(user);
         JsonNode jsonNode = objectMapper.readTree(userJson);
         ((ObjectNode) jsonNode).put("role", "INVALIDROLE");
@@ -253,7 +250,7 @@ public class AuthControllerIntegrationTest {
         String wrongPassword = "wrongpassword";
         String testName = "Test User";
 
-        User user = new User(testName, testEmail, correctPassword, Role.CUSTOMER);
+        User user = new User(testName, testEmail, correctPassword, Role.CUSTOMER, LoginType.LOCAL);
         
         mockMvc.perform(post("/api/v2/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -288,7 +285,7 @@ public class AuthControllerIntegrationTest {
         String testPassword = "password123";
         String testName = "Test Merchant";
 
-        User user = new User(testName, testEmail, testPassword, Role.MERCHANT);
+        User user = new User(testName, testEmail, testPassword, Role.MERCHANT, LoginType.LOCAL);
 
         mockMvc.perform(post("/api/v2/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -307,7 +304,7 @@ public class AuthControllerIntegrationTest {
         String testName = "測試商家";
         String testPhone = "0912345678";
 
-        User merchantUser = new User(testName, testEmail, testPassword, Role.MERCHANT);
+        User merchantUser = new User(testName, testEmail, testPassword, Role.MERCHANT, LoginType.LOCAL);
         merchantUser.setPhoneNumber(testPhone);
         
         mockMvc.perform(post("/api/v2/auth/register")

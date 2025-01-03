@@ -2,7 +2,7 @@ package com.ordernow.backend.user.service;
 
 import com.ordernow.backend.user.model.dto.UserResponse;
 import com.ordernow.backend.user.model.entity.User;
-import com.ordernow.backend.auth.repository.UserRepository;
+import com.ordernow.backend.user.repository.UserRepository;
 import com.ordernow.backend.user.model.dto.UserProfileRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

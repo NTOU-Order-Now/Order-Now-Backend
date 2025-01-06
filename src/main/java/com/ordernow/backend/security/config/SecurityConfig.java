@@ -1,7 +1,10 @@
 package com.ordernow.backend.security.config;
 
+import com.ordernow.backend.common.dto.ApiResponse;
+import com.ordernow.backend.security.handler.OAuth2SuccessHandler;
 import com.ordernow.backend.security.jwt.JWTFilter;
 import com.ordernow.backend.security.provider.CustomAuthenticationProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,24 +27,25 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class SecurityConfig {
     @Value("${cors.allowedOrigins}")
     private String allowedOrigins;
 
     private final CustomAuthenticationProvider authenticationProvider;
     private final JWTFilter jwtFilter;
-
-    @Value("${ALLOWED_ORIGIN}")
-    private String allowedOrigin;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Autowired
-    public SecurityConfig(JWTFilter jwtFilter, CustomAuthenticationProvider authenticationProvider) {
+    public SecurityConfig(JWTFilter jwtFilter, CustomAuthenticationProvider authenticationProvider, OAuth2SuccessHandler oAuth2SuccessHandler) {
         this.authenticationProvider = authenticationProvider;
         this.jwtFilter = jwtFilter;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
     @Bean
@@ -67,14 +71,42 @@ public class SecurityConfig {
     public SecurityFilterChain configure(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors->cors.configurationSource(corsConfigurationSource()))
+
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            ApiResponse.handleError(response, 401, authException.getMessage());
+                            log.error(authException.getMessage());
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            ApiResponse.handleError(response, 403, accessDeniedException.getMessage());
+                            log.error(accessDeniedException.getMessage());
+                        })
+                )
+
                 .authorizeHttpRequests(request -> request
+                        // OAuth2
+                        .requestMatchers("/oauth2/authorization/**").permitAll()
+                        .requestMatchers("/login/oauth2/code/**").permitAll()
+
+                        // WebSocket
+                        .requestMatchers("/websocket/**").permitAll()
                         .requestMatchers("/api/*/admin/**").permitAll()
                         .requestMatchers("/api/*/stores/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/*/menu/**", "/api/*/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/*/auth/login","/api/*/auth/register", "/api/*/reviews/**").permitAll()
                         .anyRequest().authenticated())
+
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            ApiResponse.handleError(response, 401, "OAuth2 authentication failed");
+                            log.error(exception.getMessage());
+                            log.error("OAuth2 authentication failed", exception);
+                        })
+                )
+
                 .httpBasic(Customizer.withDefaults())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())
                 .build();

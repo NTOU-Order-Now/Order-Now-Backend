@@ -18,13 +18,14 @@ public class User {
     private String avatarUrl = "";
     private Gender gender = Gender.OTHER;
     private Role role;
+    private LoginType loginType;
 
-    public User(String name, String email, String password, Role role) {
+    public User(String name, String email, String password, Role role, LoginType loginType) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.role = role;
-        this.gender = Gender.OTHER;
+        this.loginType = loginType;
     }
 
     public User(User user) {
@@ -36,5 +37,6 @@ public class User {
         this.avatarUrl = user.getAvatarUrl();
         this.gender = user.getGender();
         this.role = user.getRole();
+        this.loginType = user.getLoginType();
     }
 }

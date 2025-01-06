@@ -71,7 +71,7 @@ public class StoreController {
             @PathVariable String storeId)
             throws NoSuchElementException {
 
-        Store store = storeService.getStoreById(storeId);
+        Store store = storeService.validStoreId(storeId);
         ApiResponse<Store> apiResponse = ApiResponse.success(store);
         log.info("Get store successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);

@@ -2,7 +2,7 @@ package com.ordernow.backend.security.service;
 
 import com.ordernow.backend.auth.model.entity.CustomUserDetail;
 import com.ordernow.backend.user.model.entity.User;
-import com.ordernow.backend.auth.repository.UserRepository;
+import com.ordernow.backend.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,7 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(username);
         if(user == null) {
             log.error("User not found");
-            throw new UsernameNotFoundException(username);
+            throw new UsernameNotFoundException("User not found");
         }
         return new CustomUserDetail(user);
     }

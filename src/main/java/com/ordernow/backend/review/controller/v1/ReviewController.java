@@ -2,14 +2,16 @@ package com.ordernow.backend.review.controller.v1;
 
 import com.ordernow.backend.auth.model.entity.CustomUserDetail;
 import com.ordernow.backend.common.dto.ApiResponse;
+import com.ordernow.backend.common.dto.PageResponse;
 import com.ordernow.backend.common.exception.RequestValidationException;
 import com.ordernow.backend.common.validation.RequestValidator;
 import com.ordernow.backend.review.model.dto.ReviewRequest;
 import com.ordernow.backend.review.model.entity.Review;
 import com.ordernow.backend.review.service.ReviewService;
-import jakarta.websocket.server.PathParam;
+import com.ordernow.backend.store.service.StoreService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,10 +27,12 @@ import java.util.NoSuchElementException;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final StoreService storeService;
 
     @Autowired
-    public ReviewController(ReviewService reviewService) {
+    public ReviewController(ReviewService reviewService, StoreService storeService) {
         this.reviewService = reviewService;
+        this.storeService = storeService;
     }
 
     @PostMapping("/query")
@@ -43,6 +47,31 @@ public class ReviewController {
         List<Review> reviews = reviewService.getReviewByIds(ids);
         ApiResponse<List<Review>> apiResponse = ApiResponse.success(reviews);
         log.info("Get reviews successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @GetMapping("/{storeId}/query")
+    public ResponseEntity<ApiResponse<PageResponse<Review>>> queryReviews(
+            @PathVariable String storeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size)
+            throws NoSuchElementException, IllegalArgumentException {
+
+        storeService.validStoreId(storeId);
+        PageResponse<Review> reviews = reviewService.queryStoreReviews(storeId, page, size);
+        ApiResponse<PageResponse<Review>> apiResponse = ApiResponse.success(reviews);
+        log.info("Get reviews successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @GetMapping("/{storeId}")
+    public ResponseEntity<ApiResponse<int[]>> getReviewNumbersByStoreId(
+            @PathVariable String storeId)
+            throws RequestValidationException {
+
+        int[] response = reviewService.getReviewNumberByStoreId(storeId);
+        ApiResponse<int[]> apiResponse = ApiResponse.success(response);
+        log.info("Get review numbers successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 

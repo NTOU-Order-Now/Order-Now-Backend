@@ -67,18 +67,15 @@ public class OrderController {
             @RequestParam(value="size", defaultValue = "10") int size,
             @RequestParam(value="status", required = false) OrderedStatus status,
             @AuthenticationPrincipal CustomUserDetail customUserDetail)
-            throws NoSuchElementException, IllegalArgumentException {
+            throws IllegalArgumentException {
 
         if(status != null && !ALLOWED_ORDER_STATUS.contains(status.toString())) {
             throw new IllegalArgumentException("Invalid order status");
         }
 
-        List<Order> orderList = orderService.getOrderListByStatus(
+        PageResponse<Order> orders = orderService.getOrderListByStatus(
                 customUserDetail, status, page, size);
-        int totalElements = orderService.countOrderListByStatus(customUserDetail, status);
-        PageResponse<Order> pageResponse = PageResponse.createPageResponse(totalElements, page, size, orderList);
-
-        ApiResponse<PageResponse<Order>> apiResponse = ApiResponse.success(pageResponse);
+        ApiResponse<PageResponse<Order>> apiResponse = ApiResponse.success(orders);
         log.info("User search order successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }

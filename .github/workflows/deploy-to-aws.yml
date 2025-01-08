@@ -11,24 +11,23 @@ jobs:
   build:
 
     runs-on: self-hosted
-
+    env:
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      TESTING_DB_NAME: ${{ secrets.TESTING_DB_NAME }}
+      PORT: ${{ secrets.PORT }}
+      ALLOWED_ORIGIN: ${{ secrets.ALLOWED_ORIGIN }}
+      GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET }}
+      MAIL_NAME: ${{secrets.MAIL_NAME }}
+      MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD }}
     steps:
       - name: Pull Docker image
         run: sudo docker pull yuankai619/ordernow-backend:latest
       - name: Delete Old docker container
         run: sudo docker rm -f ordernow-backend-container || true
       - name: Run Docker Container
-        env:
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          TESTING_DB_NAME: ${{ secrets.TESTING_DB_NAME }}
-          PORT: ${{ secrets.PORT }}
-          ALLOWED_ORIGIN: ${{ secrets.ALLOWED_ORIGIN }}
-          GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET }}
-          MAIL_NAME: ${{secrets.MAIL_NAME }}
-          MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD }}
         run: |
           sudo docker run -d -p 8080:8080 \
             --name ordernow-backend-container \

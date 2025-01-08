@@ -30,14 +30,14 @@ jobs:
       - name: Run Docker Container
         run: |
           sudo docker run -d -p 8080:8080 \
-            -e DB_USER=${DB_USER} \
-            -e DB_PASSWORD=${DB_PASSWORD} \
-            -e DB_NAME=${DB_NAME} \
-            -e TESTING_DB_NAME=${TESTING_DB_NAME} \
-            -e PORT=${PORT} \
-            -e ALLOWED_ORIGIN=${ALLOWED_ORIGIN} \
-            -e GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
-            -e GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
-            -e MAIL_NAME=${MAIL_NAME} \
-            -e MAIL_PASSWORD=${MAIL_PASSWORD} \
+            -e DB_USER=${{ secrets.DB_USER }} \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e DB_NAME=${{ secrets.DB_NAME }} \
+            -e TESTING_DB_NAME=${{ secrets.TESTING_DB_NAME }} \
+            -e PORT=${{ secrets.PORT }} \
+            -e ALLOWED_ORIGIN=${{ secrets.ALLOWED_ORIGIN }} \
+            -e GOOGLE_CLIENT_ID=${{secrets.GOOGLE_CLIENT_ID }} \
+            -e GOOGLE_CLIENT_SECRET=${{secrets.GOOGLE_CLIENT_SECRET }} \
+            -e MAIL_NAME=${{secrets.MAIL_NAME }} \
+            -e MAIL_PASSWORD=${{secrets.MAIL_PASSWORD }} \
             --name ordernow-backend-container yuankai619/ordernow-backend:latest\

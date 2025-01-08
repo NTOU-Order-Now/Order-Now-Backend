@@ -1,0 +1,21 @@
+name: Deploy to AWS
+
+on:
+  workflow_run:
+    workflows: ["Build docker image"]
+    types:
+      - completed
+
+jobs:
+
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull Docker image
+        run: sudo docker pull yuankai619/ordernow-backend:latest
+      - name: Delete Old docker container
+        run: sudo docker rm -f ordernow-backend-container || true
+      - name: Run Docker Container
+        run: sudo docker run -d -p 8080:8080 --name ordernow-backend-container yuankai619/ordernow-backend

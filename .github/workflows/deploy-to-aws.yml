@@ -18,4 +18,17 @@ jobs:
       - name: Delete Old docker container
         run: sudo docker rm -f ordernow-backend-container || true
       - name: Run Docker Container
-        run: sudo docker run -d -p 8080:8080 --name ordernow-backend-container yuankai619/ordernow-backend
+        run: |
+          sudo docker run -d -p 8080:8080 \
+            --name ordernow-backend-container \
+            -e DB_USER=${{ secrets.DB_USER }} \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e DB_NAME=${{ secrets.DB_NAME }} \
+            -e TESTING_DB_NAME=${{ secrets.TESTING_DB_NAME }} \
+            -e PORT=${{ secrets.PORT }} \
+            -e ALLOWED_ORIGIN=${{ secrets.ALLOWED_ORIGIN }} \
+            -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+            -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
+            -e MAIL_NAME=${{ secrets.MAIL_NAME }} \
+            -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
+            yuankai619/ordernow-backend

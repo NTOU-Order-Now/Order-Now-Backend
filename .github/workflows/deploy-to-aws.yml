@@ -36,4 +36,4 @@ jobs:
             -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
             -e MAIL_NAME=${{ secrets.MAIL_NAME }} \
             -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
-            yuankai619/ordernow-backend
+            yuankai619/ordernow-backend:latest

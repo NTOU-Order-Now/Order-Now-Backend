@@ -30,7 +30,7 @@ jobs:
       - name: Run Docker Container
         run: |
           sudo docker run -d -p 8080:8080 \
-            --name ordernow-backend-container \
+            --name ordernow-backend-container yuankai619/ordernow-backend:latest\
             -e DB_USER=$DB_USER \
             -e DB_PASSWORD=$DB_PASSWORD \
             -e DB_NAME=$DB_NAME \
@@ -41,4 +41,3 @@ jobs:
             -e GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET \
             -e MAIL_NAME=$MAIL_NAME \
             -e MAIL_PASSWORD=$MAIL_PASSWORD \
-            yuankai619/ordernow-backend:latest

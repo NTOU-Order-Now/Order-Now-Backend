@@ -13,11 +13,6 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Login Dockerhub
-        env:
-          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
-          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-        run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - name: Pull Docker image
         run: sudo docker pull yuankai619/ordernow-backend:latest
       - name: Delete Old docker container
@@ -25,7 +20,6 @@ jobs:
       - name: Run Docker Container
         run: |
           sudo docker run -d -p 8080:8080 \
-            --name ordernow-backend-container \
             -e DB_USER=${{ secrets.DB_USER }} \
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e DB_NAME=${{ secrets.DB_NAME }} \
@@ -36,4 +30,4 @@ jobs:
             -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
             -e MAIL_NAME=${{ secrets.MAIL_NAME }} \
             -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \
-            yuankai619/ordernow-backend:latest
+            --name ordernow-backend-container yuankai619/ordernow-backend:latest

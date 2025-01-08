@@ -21,8 +21,8 @@ jobs:
           DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
           DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
         run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-      - name: Delete Old docker image
-        run: sudo docker image rm -f ordernow-backend:latest || true
+      - name: Delete old docker image
+        run: sudo docker image rm -f yuankai619/ordernow-backend:latest || true
       - name: Build the Docker image
         run: docker build -t yuankai619/ordernow-backend .
       - name: Push to Dockerhub

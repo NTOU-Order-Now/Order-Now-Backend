@@ -132,7 +132,7 @@ public class OrderService {
         else if(userDetail.getRole() == Role.MERCHANT) {
             Sort sort = Sort.by(Sort.Direction.ASC, "orderTime");
             Pageable pageable = PageRequest.of(page, size, sort);
-            Merchant merchant = (Merchant) userDetail.getUser();
+            Merchant merchant = (Merchant) userDetail.user();
             if(status == null)
                 orders = orderRepository.findAllByStoreIdAndStatusNot(merchant.getStoreId(), OrderedStatus.IN_CART, pageable);
             else

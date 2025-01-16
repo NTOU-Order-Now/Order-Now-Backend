@@ -22,6 +22,7 @@ public class Review {
     private Double averageSpend;
     private String comment;
     private String storeId;
+    private String orderId;
     private String userId;
     private String userName;
     private Double rating;

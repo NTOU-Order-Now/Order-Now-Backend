@@ -46,7 +46,7 @@ public class ReviewController {
 
         List<Review> reviews = reviewService.getReviewByIds(ids);
         ApiResponse<List<Review>> apiResponse = ApiResponse.success(reviews);
-        log.info("Get reviews successfully");
+//        log.info("Get reviews successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
@@ -90,7 +90,26 @@ public class ReviewController {
                 customUserDetail.getId(),
                 customUserDetail.getName());
         ApiResponse<Void> apiResponse = ApiResponse.success(null);
-        log.info("Add review successfully");
+        log.info("Add review to store successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @PostMapping("/{orderId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<ApiResponse<Void>> AddReviewToStoreV2(
+            @PathVariable(value = "orderId") String orderId,
+            @RequestBody ReviewRequest reviewRequest,
+            @AuthenticationPrincipal CustomUserDetail customUserDetail)
+            throws NoSuchElementException, RequestValidationException {
+
+        RequestValidator.validateRequest(reviewRequest);
+        reviewService.addNewReviewToStoreV2(
+                orderId,
+                reviewRequest,
+                customUserDetail.getId(),
+                customUserDetail.getName());
+        ApiResponse<Void> apiResponse = ApiResponse.success(null);
+        log.info("Add review to store successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 }

@@ -1,6 +1,7 @@
 package com.ordernow.backend.review.service;
 
 import com.ordernow.backend.common.dto.PageResponse;
+import com.ordernow.backend.order.service.OrderService;
 import com.ordernow.backend.review.model.dto.ReviewRequest;
 import com.ordernow.backend.review.model.entity.Review;
 import com.ordernow.backend.review.repository.ReviewRepository;
@@ -19,11 +20,13 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final StoreService storeService;
+    private final OrderService orderService;
 
     @Autowired
-    public ReviewService(ReviewRepository reviewRepository, StoreService storeService) {
+    public ReviewService(ReviewRepository reviewRepository, StoreService storeService, OrderService orderService) {
         this.reviewRepository = reviewRepository;
         this.storeService = storeService;
+        this.orderService = orderService;
     }
 
     public List<Review> getReviewByIds(List<String> ids) {
@@ -60,6 +63,29 @@ public class ReviewService {
         }
         if(reviewRequest.getAverageSpend() <= 0) {
             throw new NoSuchElementException("Invalid average spend");
+        }
+
+        Review review = Review.createReview(reviewRequest, userId, userName, storeId);
+        storeService.updateStoreByReview(
+                storeId, reviewRequest.getRating(),
+                reviewRequest.getAverageSpend(),
+                reviewRepository.countByStoreId(storeId));
+        reviewRepository.save(review);
+    }
+
+    public void addNewReviewToStoreV2(String orderId, ReviewRequest reviewRequest, String userId, String userName)
+            throws NoSuchElementException {
+
+        String storeId = orderService.getOrderAndValid(orderId).getStoreId();
+
+        if(reviewRequest.getRating() <= 0 || reviewRequest.getRating() > 5) {
+            throw new NoSuchElementException("Invalid rating");
+        }
+        if(reviewRequest.getAverageSpend() <= 0) {
+            throw new NoSuchElementException("Invalid average spend");
+        }
+        if(reviewRepository.findByOrderId(orderId).isPresent()) {
+            throw new NoSuchElementException("Review already exists");
         }
 
         Review review = Review.createReview(reviewRequest, userId, userName, storeId);

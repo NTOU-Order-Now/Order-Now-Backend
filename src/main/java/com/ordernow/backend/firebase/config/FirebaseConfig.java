@@ -18,7 +18,7 @@ public class FirebaseConfig {
     public void initialize() {
         try {
             FileInputStream serviceAccount
-                    = new FileInputStream("./serviceAccountKey.json");
+                    = new FileInputStream("src/main/resources/serviceAccountKey.json");
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -27,6 +27,7 @@ public class FirebaseConfig {
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
             }
+            log.info("FirebaseApp initialized");
         } catch (IOException e) {
             log.error(e.getMessage());
         }

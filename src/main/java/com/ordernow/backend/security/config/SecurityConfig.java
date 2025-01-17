@@ -1,8 +1,8 @@
 package com.ordernow.backend.security.config;
 
 import com.ordernow.backend.common.dto.ApiResponse;
+import com.ordernow.backend.security.filter.SecurityFilter;
 import com.ordernow.backend.security.handler.OAuth2SuccessHandler;
-import com.ordernow.backend.security.jwt.JWTFilter;
 import com.ordernow.backend.security.provider.CustomAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -38,13 +37,11 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     private final CustomAuthenticationProvider authenticationProvider;
-    private final JWTFilter jwtFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Autowired
-    public SecurityConfig(JWTFilter jwtFilter, CustomAuthenticationProvider authenticationProvider, OAuth2SuccessHandler oAuth2SuccessHandler) {
+    public SecurityConfig(CustomAuthenticationProvider authenticationProvider, OAuth2SuccessHandler oAuth2SuccessHandler) {
         this.authenticationProvider = authenticationProvider;
-        this.jwtFilter = jwtFilter;
         this.oAuth2SuccessHandler = oAuth2SuccessHandler;
     }
 
@@ -68,7 +65,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+    public SecurityFilterChain configure(HttpSecurity http, SecurityFilter securityFilter) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors->cors.configurationSource(corsConfigurationSource()))
 
@@ -90,10 +87,12 @@ public class SecurityConfig {
 
                         // WebSocket
                         .requestMatchers("/websocket/**").permitAll()
+                        
                         .requestMatchers("/api/*/admin/**").permitAll()
                         .requestMatchers("/api/*/stores/**").permitAll()
+                        .requestMatchers("/api/*/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/*/menu/**", "/api/*/reviews/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/*/auth/login","/api/*/auth/register", "/api/*/reviews/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,  "/api/*/reviews/**").permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2Login(oauth2 -> oauth2
@@ -107,7 +106,7 @@ public class SecurityConfig {
 
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())
                 .build();
     }

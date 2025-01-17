@@ -1,9 +1,9 @@
 package com.ordernow.backend.security.filter;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.ordernow.backend.common.dto.ApiResponse;
+import com.ordernow.backend.firebase.service.FirebaseService;
 import com.ordernow.backend.security.service.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,10 +28,12 @@ import java.io.IOException;
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService customUserDetailsService;
+    private final FirebaseService firebaseService;
 
     @Autowired
-    public SecurityFilter(CustomUserDetailsService customUserDetailsService) {
+    public SecurityFilter(CustomUserDetailsService customUserDetailsService, FirebaseService firebaseService) {
         this.customUserDetailsService = customUserDetailsService;
+        this.firebaseService = firebaseService;
     }
 
     @Override
@@ -54,7 +56,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         try {
             String token = authToken.substring(7);
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+            FirebaseToken decodedToken = firebaseService.verifyToken(token);
 
             String username = decodedToken.getEmail();
             if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

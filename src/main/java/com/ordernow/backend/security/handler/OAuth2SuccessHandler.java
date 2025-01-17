@@ -2,7 +2,6 @@ package com.ordernow.backend.security.handler;
 
 import com.ordernow.backend.auth.model.dto.LoginResponse;
 import com.ordernow.backend.common.dto.ApiResponse;
-import com.ordernow.backend.security.jwt.JWTService;
 import com.ordernow.backend.user.model.entity.LoginType;
 import com.ordernow.backend.user.model.entity.User;
 import com.ordernow.backend.user.service.UserService;
@@ -23,12 +22,10 @@ import java.util.Map;
 @Slf4j
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JWTService jwtService;
     private final UserService userService;
 
     @Autowired
-    public OAuth2SuccessHandler(JWTService jwtService, UserService userService) {
-        this.jwtService = jwtService;
+    public OAuth2SuccessHandler(UserService userService) {
         this.userService = userService;
     }
 
@@ -58,7 +55,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             result.put("avatarUrl", avatarUrl);
             ApiResponse.handleSuccess(response, result);
         } else if(user.getLoginType() == LoginType.GOOGLE){ // login
-            String token = jwtService.generateToken(email);
+//            String token = jwtService.generateToken(email);
+            String token = null;
             LoginResponse loginResponse = LoginResponse.createResponse(user, token);
             ApiResponse.handleSuccess(response, loginResponse);
         } else {

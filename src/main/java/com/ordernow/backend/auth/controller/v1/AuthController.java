@@ -29,7 +29,7 @@ public class AuthController {
     public ResponseEntity<String> signUpUser(@RequestBody Customer user) {
         log.info("Fetch API: register Success");
         try {
-            authService.createUser(user);
+            authService.register(user);
             return ResponseEntity.status(HttpStatus.OK).body("Success");
         } catch (Exception e) {
             log.error("Signup failed for user: {}", user.getEmail(), e);

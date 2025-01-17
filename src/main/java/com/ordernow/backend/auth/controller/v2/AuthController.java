@@ -1,10 +1,13 @@
 package com.ordernow.backend.auth.controller.v2;
 
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.UserRecord;
 import com.ordernow.backend.auth.model.dto.LoginResponse;
 import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.auth.model.dto.LoginRequest;
 import com.ordernow.backend.common.exception.RequestValidationException;
 import com.ordernow.backend.common.validation.RequestValidator;
+import com.ordernow.backend.firebase.service.FirebaseService;
 import com.ordernow.backend.user.model.entity.User;
 import com.ordernow.backend.auth.service.AuthService;
 import com.ordernow.backend.user.service.UserService;
@@ -25,27 +28,29 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserService userService;
+    private final FirebaseService firebaseService;
 
     @Autowired
-    public AuthController(AuthService authService, UserService userService) {
+    public AuthController(AuthService authService, UserService userService, FirebaseService firebaseService) {
         this.authService = authService;
         this.userService = userService;
+        this.firebaseService = firebaseService;
     }
     
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Void>> signUpUser(
+    public ResponseEntity<ApiResponse<Void>> register(
             @RequestBody User user)
             throws IllegalArgumentException, RequestValidationException {
 
         RequestValidator.validateRequest(user);
-        authService.createUser(user);
+        authService.register(user);
         ApiResponse<Void> apiResponse = ApiResponse.success(null);
         log.info("Sign up user successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> loginUser(
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
             @RequestBody LoginRequest loginRequest)
             throws AuthenticationServiceException, RequestValidationException {
 
@@ -56,6 +61,19 @@ public class AuthController {
         LoginResponse response = LoginResponse.createResponse(user, token);
         ApiResponse<LoginResponse> apiResponse = ApiResponse.success(response);
         log.info("Login user successfully");
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+    @PostMapping("/firebase/register")
+    public ResponseEntity<ApiResponse<Void>> firebaseRegister(
+            @RequestBody User user)
+            throws IllegalArgumentException, RequestValidationException, FirebaseAuthException {
+
+        RequestValidator.validateRequest(user);
+        UserRecord userRecord = firebaseService.createUser(user.getEmail(), user.getPassword());
+        System.out.println(userRecord);
+        ApiResponse<Void> apiResponse = ApiResponse.success(null);
+        log.info("Sign up user successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 }

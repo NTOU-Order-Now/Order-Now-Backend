@@ -1,9 +1,6 @@
 package com.ordernow.backend.firebase.service;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
-import com.google.firebase.auth.UserRecord;
+import com.google.firebase.auth.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +30,15 @@ public class FirebaseService {
                 .setPassword(password)
                 .setEmailVerified(false);
 
-        return firebaseAuth.createUser(request);
+        UserRecord userRecord = firebaseAuth.createUser(request);
+        sendEmailVerification(email);
+        return userRecord;
+    }
+
+    public void sendEmailVerification(String email)
+            throws FirebaseAuthException {
+        String link = firebaseAuth.generateEmailVerificationLink(email);
+        log.info("Sending email verification email to {}", email);
+        System.out.println(link);
     }
 }

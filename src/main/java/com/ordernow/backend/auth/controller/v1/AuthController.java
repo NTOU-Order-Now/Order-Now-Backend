@@ -1,6 +1,7 @@
 package com.ordernow.backend.auth.controller.v1;
 
 import com.ordernow.backend.auth.model.dto.LoginRequest;
+import com.ordernow.backend.auth.model.dto.RegisterRequest;
 import com.ordernow.backend.user.model.entity.Customer;
 import com.ordernow.backend.user.model.entity.User;
 import com.ordernow.backend.auth.service.AuthService;
@@ -26,13 +27,13 @@ public class AuthController {
     }
     
     @PostMapping("/register")
-    public ResponseEntity<String> signUpUser(@RequestBody Customer user) {
+    public ResponseEntity<String> signUpUser(@RequestBody RegisterRequest request) {
         log.info("Fetch API: register Success");
         try {
-            authService.register(user);
+            authService.register(request);
             return ResponseEntity.status(HttpStatus.OK).body("Success");
         } catch (Exception e) {
-            log.error("Signup failed for user: {}", user.getEmail(), e);
+            log.error("Signup failed for user: {}", request.getEmail(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed");
         }
     }

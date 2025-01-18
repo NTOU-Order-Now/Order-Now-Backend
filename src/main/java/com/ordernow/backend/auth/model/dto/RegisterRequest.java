@@ -1,5 +1,7 @@
 package com.ordernow.backend.auth.model.dto;
 
+import com.ordernow.backend.user.model.entity.Gender;
+import com.ordernow.backend.user.model.entity.LoginType;
 import com.ordernow.backend.user.model.entity.Role;
 import com.ordernow.backend.user.model.entity.User;
 import lombok.Data;
@@ -19,7 +21,10 @@ public class RegisterRequest {
                 .email(email)
                 .password(password)
                 .phoneNumber(phoneNumber)
+                .avatarUrl("")
+                .gender(Gender.OTHER)
                 .role(role)
+                .loginType(LoginType.LOCAL)
                 .build();
     }
 

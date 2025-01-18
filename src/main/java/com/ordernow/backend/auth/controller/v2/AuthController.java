@@ -3,6 +3,7 @@ package com.ordernow.backend.auth.controller.v2;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import com.ordernow.backend.auth.model.dto.LoginResponse;
+import com.ordernow.backend.auth.model.dto.RegisterRequest;
 import com.ordernow.backend.common.dto.ApiResponse;
 import com.ordernow.backend.auth.model.dto.LoginRequest;
 import com.ordernow.backend.common.exception.RequestValidationException;
@@ -39,11 +40,11 @@ public class AuthController {
     
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Void>> register(
-            @RequestBody User user)
+            @RequestBody RegisterRequest request)
             throws IllegalArgumentException, RequestValidationException {
 
-        RequestValidator.validateRequest(user);
-        authService.register(user);
+        RequestValidator.validateRequest(request);
+        authService.register(request);
         ApiResponse<Void> apiResponse = ApiResponse.success(null);
         log.info("Sign up user successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
@@ -66,14 +67,14 @@ public class AuthController {
 
     @PostMapping("/firebase/register")
     public ResponseEntity<ApiResponse<Void>> firebaseRegister(
-            @RequestBody User user)
+            @RequestBody RegisterRequest request)
             throws IllegalArgumentException, RequestValidationException, FirebaseAuthException {
 
-        RequestValidator.validateRequest(user);
-        UserRecord userRecord = firebaseService.createUser(user.getEmail(), user.getPassword());
+        RequestValidator.validateRequest(request);
+        UserRecord userRecord = firebaseService.createUser(request.getEmail(), request.getPassword(), request.getName());
         System.out.println(userRecord);
         ApiResponse<Void> apiResponse = ApiResponse.success(null);
-        log.info("Sign up user successfully");
+        log.info("Register user successfully");
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 }

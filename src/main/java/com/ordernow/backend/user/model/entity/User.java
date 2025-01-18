@@ -14,13 +14,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 public class User {
     @Id
-    private String id = "";
+    private String id;
     private String name;
     private String email;
     private String password;
-    private String phoneNumber = "";
-    private String avatarUrl = "";
-    private Gender gender = Gender.OTHER;
+    private String phoneNumber;
+    private String avatarUrl;
+    private Gender gender;
     private Role role;
     private LoginType loginType;
 

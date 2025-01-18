@@ -15,15 +15,13 @@ import java.util.List;
 @Document(collection = "user")
 @TypeAlias("customer")
 public class Customer extends User{
-    private List<String> storeCollection;
+    private List<String> storeCollection = new ArrayList<>();
 
     public Customer() {// Springboot need it
         super();
-        storeCollection = new ArrayList<>();
     }
 
     public Customer(User user) {
         super(user);
-        storeCollection = new ArrayList<>();
     }
 }

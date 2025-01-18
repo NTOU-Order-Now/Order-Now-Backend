@@ -1,6 +1,8 @@
 package com.ordernow.backend.auth.service;
 
+import com.google.firebase.auth.UserRecord;
 import com.ordernow.backend.auth.model.dto.LoginRequest;
+import com.ordernow.backend.auth.model.dto.RegisterRequest;
 import com.ordernow.backend.firebase.service.FirebaseService;
 import com.ordernow.backend.store.service.StoreService;
 import com.ordernow.backend.user.model.entity.*;
@@ -29,39 +31,30 @@ public class AuthService {
         this.storeService = storeService;
     }
 
-    public void validateEmail(String email) {
-        if(userRepository.findByEmail(email) != null) {
-            throw new IllegalArgumentException("Email already exists");
-        }
-    }
-
-    public void validateName(String name) {
-        if(name.length() > 20) {
-            throw new IllegalArgumentException("Name is too long");
-        }
-    }
-
-    public void register(User user)
+    public void register(RegisterRequest request)
             throws IllegalArgumentException {
 
-        validateEmail(user.getEmail());
-        validateName(user.getName());
-        user.setPassword(encoder.encode(user.getPassword()));
+        try {
+            User user = request.toUser();
 
-        if(user.getLoginType() == LoginType.GOOGLE) {
-            user.setPassword("");
+            UserRecord userRecord = firebaseService.createUser(
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getName());
+
+            user.setId(userRecord.getUid());
+            user.setPassword(encoder.encode(user.getPassword()));
+
+            User savedUser = switch(user.getRole()) {
+                case CUSTOMER -> new Customer(user);
+                case MERCHANT -> new Merchant(user, storeService.createAndSaveStore(user.getPhoneNumber()));
+                default -> throw new IllegalArgumentException("Invalid role");
+            };
+            userRepository.save(savedUser);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new IllegalArgumentException(e);
         }
-
-        if(user.getRole() == Role.MERCHANT && user.getPhoneNumber().isEmpty()){
-            throw new IllegalArgumentException("Merchant phone number can not be empty");
-        }
-
-        User savedUser = switch(user.getRole()) {
-            case CUSTOMER -> new Customer(user);
-            case MERCHANT -> new Merchant(user, storeService.createAndSaveStore(user.getPhoneNumber()));
-            default -> throw new IllegalArgumentException("Invalid role");
-        };
-        userRepository.save(savedUser);
     }
 
     public String verify(LoginRequest loginRequest)

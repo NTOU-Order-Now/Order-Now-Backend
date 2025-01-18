@@ -22,12 +22,13 @@ public class FirebaseService {
         return firebaseAuth.verifyIdToken(token);
     }
 
-    public UserRecord createUser(String email, String password)
+    public UserRecord createUser(String email, String password, String name)
             throws FirebaseAuthException {
 
         UserRecord.CreateRequest request = new UserRecord.CreateRequest()
                 .setEmail(email)
                 .setPassword(password)
+                .setDisplayName(name)
                 .setEmailVerified(false);
 
         UserRecord userRecord = firebaseAuth.createUser(request);

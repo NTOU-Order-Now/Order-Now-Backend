@@ -40,6 +40,8 @@ dependencies {
 
     // firebase
     implementation 'com.google.firebase:firebase-admin:9.4.3'
+    //fix vulnerability found in dependency
+    implementation "io.netty:netty-common:4.1.115.Final"
 }
 
 tasks.named('test') {
